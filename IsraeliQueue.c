@@ -10,7 +10,7 @@ typedef struct Node
     void* student;
     void* friends[5];
     void* enemies [3];
-    Node* next;
+    struct Node* next;
 }*Node;
 
 struct IsraeliQueue_t
@@ -35,7 +35,7 @@ struct IsraeliQueue_t
 /**Creates a new IsraeliQueue_t object with the provided friendship functions, a NULL-terminated array,
  * comparison function, friendship threshold and rivalry threshold. Returns a pointer
  * to the new object. In case of failure, return NULL.*/
-IsraeliQueue IsraeliQueueCreate(FriendshipFunction *, ComparisonFunction, int, int){
+IsraeliQueue IsraeliQueueCreate(FriendshipFunction* friendFunc, ComparisonFunction compFunc, int friend_th, int enemy_th){
     IsraeliQueue newQueue = malloc(sizeof(IsraeliQueue));
     if (newQueue == NULL){
         return NULL;
@@ -74,7 +74,7 @@ IsraeliQueue IsraeliQueueClone(IsraeliQueue q){
  *
  * Deallocates all memory allocated by IsraeliQueueCreate for the object pointed to by
  * the parameter.*/
-void IsraeliQueueDestroy(IsraeliQueue){
+void IsraeliQueueDestroy(IsraeliQueue q){
     if (q == NULL) return;
     Node temp = q->head;
     while (temp != NULL){
