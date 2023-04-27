@@ -3,8 +3,15 @@
 //
 
 #include "IsraeliQueue.h"
+#include <stdlib.h>
 
-typedef struct Node Node;
+typedef struct Node
+{
+    void* student;
+    void* friends[5];
+    void* enemies [3];
+    Node* next;
+}*Node;
 
 struct IsraeliQueue_t
 {
@@ -15,13 +22,7 @@ struct IsraeliQueue_t
     ComparisonFunction* compFunc;
 };
 
-struct Node
-{
-    void* student;
-    int friend_th;
-    int enemy_th;
-    Node* next;
-};
+israeliQueue
 
 
 
@@ -35,9 +36,17 @@ struct Node
 /**Creates a new IsraeliQueue_t object with the provided friendship functions, a NULL-terminated array,
  * comparison function, friendship threshold and rivalry threshold. Returns a pointer
  * to the new object. In case of failure, return NULL.*/
-IsraeliQueue IsraeliQueueCreate(FriendshipFunction *, ComparisonFunction, int, int)
-{
-    IsraeliQueue*
+IsraeliQueue IsraeliQueueCreate(FriendshipFunction *, ComparisonFunction, int, int){
+    IsraeliQueue newQueue = malloc(sizeof(IsraeliQueue));
+    if (newQueue == NULL){
+        return NULL;
+    }
+    newQueue->friendFunc = friendFunc;
+    newQueue->compFunc = compFunc;
+    newQueue->friend_th = friend_th;
+    newQueue->enemy_th = enemy_th;
+    newQueue->head = NULL;
+    return newQueue;
 }
 
 /**Returns a new queue with the same elements as the parameter. If the parameter is NULL,
