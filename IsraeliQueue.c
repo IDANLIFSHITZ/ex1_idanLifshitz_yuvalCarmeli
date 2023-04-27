@@ -4,7 +4,27 @@
 
 #include "IsraeliQueue.h"
 
+typedef struct Node Node;
+
 struct IsraeliQueue_t
+{
+    Node* head;
+    int friend_th;
+    int enemy_th;
+    FriendshipFunction* friendFunc;
+    ComparisonFunction* compFunc;
+};
+
+struct Node
+{
+    void* student;
+    int friend_th;
+    int enemy_th;
+    Node* next;
+};
+
+
+
 /**Error clarification:
  * ISRAELIQUEUE_SUCCESS: Indicates the function has completed its task successfully with no errors.
  * ISRAELIQUEUE_ALLOC_FAILED: Indicates memory allocation failed during the execution of the function.
@@ -17,7 +37,7 @@ struct IsraeliQueue_t
  * to the new object. In case of failure, return NULL.*/
 IsraeliQueue IsraeliQueueCreate(FriendshipFunction *, ComparisonFunction, int, int)
 {
-
+    IsraeliQueue*
 }
 
 /**Returns a new queue with the same elements as the parameter. If the parameter is NULL,
