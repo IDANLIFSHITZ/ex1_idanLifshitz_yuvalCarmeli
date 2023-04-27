@@ -22,7 +22,6 @@ struct IsraeliQueue_t
     ComparisonFunction* compFunc;
 };
 
-israeliQueue
 
 
 
@@ -51,8 +50,23 @@ IsraeliQueue IsraeliQueueCreate(FriendshipFunction *, ComparisonFunction, int, i
 
 /**Returns a new queue with the same elements as the parameter. If the parameter is NULL,
  * NULL is returned.*/
-IsraeliQueue IsraeliQueueClone(IsraeliQueue q)
-{
+IsraeliQueue IsraeliQueueClone(IsraeliQueue q){
+    if (q == NULL) return NULL;
+    IsraeliQueue newQueue = malloc(sizeof(IsraeliQueue));
+    if (newQueue == NULL) return NULL;
+
+    newQueue->friendFunc = q->friendFunc;
+    newQueue->compFunc = q->compFunc;
+    newQueue->friend_th = q->friend_th;
+    newQueue->enemy_th = q->enemy_th;
+    newQueue->head = NULL;
+
+    Node temp = q->head;
+    while (temp != NULL){
+        IsraeliQueueEnqueue(newQueue, temp->student);
+        temp = temp->next;
+    }
+    return newQueue;
 
 }
 
@@ -60,10 +74,18 @@ IsraeliQueue IsraeliQueueClone(IsraeliQueue q)
  *
  * Deallocates all memory allocated by IsraeliQueueCreate for the object pointed to by
  * the parameter.*/
-void IsraeliQueueDestroy(IsraeliQueue)
-{
+void IsraeliQueueDestroy(IsraeliQueue){
+    if (q == NULL) return;
+    Node temp = q->head;
+    while (temp != NULL){
+        Node next = temp->next;
+        free(temp);
+        temp = next;
+    }
+    free(q);
 
 }
+
 
 /**@param IsraeliQueue: an IsraeliQueue in which to insert the item.
  * @param item: an item to enqueue
