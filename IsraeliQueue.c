@@ -124,7 +124,7 @@ IsraeliQueueError IsraeliQueueEnqueue(IsraeliQueue q, void * item)
     {
         relation = checkFriend(q, newNode, currNode); //gets current node relation to new Node.
         if (relation == FRIEND && bestFriend == NULL) bestFriend = currNode; // if friends and closest friend to front of the line.
-        else if (relation == ENEMY)  // if enemy.
+        else if (relation == ENEMY && currNode->enemyNum < 3)  // if enemy.
         {
             if (firstEnemy) //if first enemy in queue.
             {
@@ -140,6 +140,7 @@ IsraeliQueueError IsraeliQueueEnqueue(IsraeliQueue q, void * item)
         int i = 0;
         newNode->next = bestFriend->next;
         bestFriend->next = newNode;
+        if (q->compFunc(q->tail->student, bestFriend->student) == 0) q->tail = newNode;
     }
     else // else goes to back of the queue
     {
@@ -156,8 +157,7 @@ IsraeliQueueError IsraeliQueueEnqueue(IsraeliQueue q, void * item)
  * Makes the IsraeliQueue provided recognize the FriendshipFunction provided.*/
 IsraeliQueueError IsraeliQueueAddFriendshipMeasure(IsraeliQueue q, FriendshipFunction friendFunc2Add)
 {
-    int size = 0;
-    for (size = 0; q->friendFunc[size] != NULL; size++) {}
+    int size = IsraeliQueueSize(q);
     q->friendFunc = (FriendshipFunction*)realloc(q->friendFunc ,sizeof(FriendshipFunction)*(size+1));
     if (q->friendFunc == NULL) return ISRAELIQUEUE_ALLOC_FAILED;
 
@@ -173,7 +173,6 @@ IsraeliQueueError IsraeliQueueUpdateFriendshipThreshold(IsraeliQueue q, int Frie
     if (q == NULL) return ISRAELIQUEUE_BAD_PARAM;
     q->friend_th = FriendshipThreshold;
     return ISRAELIQUEUE_SUCCESS;
-
 }
 
 /**@param IsraeliQueue: an IsraeliQueue whose rivalry threshold is to be modified
@@ -196,7 +195,6 @@ int IsraeliQueueSize(IsraeliQueue q){
         temp = temp->next;
     }
     return size;
-
 }
 
 /**Removes and returns the foremost element of the provided queue. If the parameter
@@ -210,7 +208,6 @@ void* IsraeliQueueDequeue(IsraeliQueue q){
     q->head = temp->next;
     free(temp);
     return item;
-
 }
 
 /**@param item: an object comparable to the objects in the IsraeliQueue
@@ -226,13 +223,32 @@ bool IsraeliQueueContains(IsraeliQueue q, void * item)
         temp = temp->next;
     }
     return false;
-
 }
 
 /**Advances each item in the queue to the foremost position accessible to it,
  * from the back of the queue frontwards.*/
-IsraeliQueueError IsraeliQueueImprovePositions(IsraeliQueue)
+IsraeliQueueError IsraeliQueueImprovePositions(IsraeliQueue q)
 {
+    int size = IsraeliQueueSize(q);
+    Node* NodesArr = (Node*)malloc(sizeof(Node)*size);
+    Node currNode;
+    for(int i = 0; i < size; i++)
+    {
+        NodesArr[i] = currNode;
+        currNode = currNode->next;
+    }
+
+    for (int i = 0; i < size; i++)
+    {
+        Node Node2Advance = NodesArr[i];
+    currNode = q->head;
+        for (int i = 0; i < size; i++)
+        {
+            currNode
+            if ()
+        }
+
+    }
 
 }
 
@@ -271,7 +287,7 @@ int checkFriend(IsraeliQueue q, void* f1, void* f2)
     for (int i = 0; q->friendFunc[i] != NULL; i++) //for friend function in queue.
     {
         curr = q->friendFunc[i](f1, f2);
-        if (curr > q->friend_th) return FRIEND; // if fruend.
+        if (curr > q->friend_th) return FRIEND; // if friend.
         sum += curr;
         sumCount++;
     }
