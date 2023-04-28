@@ -55,7 +55,7 @@
 				}
 			],
 			"type" : "INTERNAL",
-			"value" : "c:/Technion/mtm/hw1/ex1_idanLifshitz_yuvalCarmeli/cmake-build-debug"
+			"value" : "c:/Users/yuval/CLionProjects/ex1_idanLifshitz_yuvalCarmeli/cmake-build-debug"
 		},
 		{
 			"name" : "CMAKE_CACHE_MAJOR_VERSION",
@@ -431,7 +431,7 @@
 				}
 			],
 			"type" : "STATIC",
-			"value" : "C:/Technion/mtm/hw1/ex1_idanLifshitz_yuvalCarmeli/cmake-build-debug/CMakeFiles/pkgRedirects"
+			"value" : "C:/Users/yuval/CLionProjects/ex1_idanLifshitz_yuvalCarmeli/cmake-build-debug/CMakeFiles/pkgRedirects"
 		},
 		{
 			"name" : "CMAKE_GENERATOR",
@@ -503,7 +503,7 @@
 				}
 			],
 			"type" : "INTERNAL",
-			"value" : "C:/Technion/mtm/hw1/ex1_idanLifshitz_yuvalCarmeli"
+			"value" : "C:/Users/yuval/CLionProjects/ex1_idanLifshitz_yuvalCarmeli"
 		},
 		{
 			"name" : "CMAKE_INSTALL_PREFIX",
@@ -1131,7 +1131,7 @@
 				}
 			],
 			"type" : "STATIC",
-			"value" : "C:/Technion/mtm/hw1/ex1_idanLifshitz_yuvalCarmeli/cmake-build-debug"
+			"value" : "C:/Users/yuval/CLionProjects/ex1_idanLifshitz_yuvalCarmeli/cmake-build-debug"
 		},
 		{
 			"name" : "ex1_idanLifshitz_yuvalCarmeli_IS_TOP_LEVEL",
@@ -1155,7 +1155,7 @@
 				}
 			],
 			"type" : "STATIC",
-			"value" : "C:/Technion/mtm/hw1/ex1_idanLifshitz_yuvalCarmeli"
+			"value" : "C:/Users/yuval/CLionProjects/ex1_idanLifshitz_yuvalCarmeli"
 		}
 	],
 	"kind" : "cache",

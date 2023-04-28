@@ -4,6 +4,9 @@
 
 #include "IsraeliQueue.h"
 #include <stdlib.h>
+#include <stdio.h>
+#include <math.h>
+
 
 
 enum {STRANGER, FRIEND, ENEMY};
@@ -30,9 +33,11 @@ struct IsraeliQueue_t
 
 
 int checkFriend(IsraeliQueue q, void* f1, void* f2);
-void addFunc(FriendshipFunction funcArr, FriendshipFunction func2Add);
 FriendshipFunction* createFriendFuncArray(FriendshipFunction* friendFunc);
 ComparisonFunction* createCompFuncArray(ComparisonFunction* friendFunc);
+int getFriendshipThresholdForMerged(IsraeliQueue* , int);
+int getEnemyThresholdForMerged(IsraeliQueue* , int);
+
 
 /**Error clarification:
  * ISRAELIQUEUE_SUCCESS: Indicates the function has completed its task successfully with no errors.
@@ -258,22 +263,44 @@ IsraeliQueueError IsraeliQueueImprovePositions(IsraeliQueue q)
  * Merges all queues in q_arr into a single new queue, with parameters the parameters described
  * in the exercise. Each queue in q_arr enqueues its head in the merged queue, then lets the next
  * one enqueue an item, in the order defined by q_arr. In the event of any error during execution, return NULL.*/
-IsraeliQueue IsraeliQueueMerge(IsraeliQueue* q ,ComparisonFunction compFunc)
-{
+IsraeliQueue IsraeliQueueMerge(IsraeliQueue* q ,ComparisonFunction compFunc) {
+    //gets size of array.
     if (q == NULL) return NULL;
     int size = 0;
     for (size = 0; q[size] != NULL; size++) {}
 
-    IsraeliQueue mergedQueue = IsraeliQueueCreate(compFunc, q[0]->friendFunc[0], q[0]->friend_th, q[0]->enemy_th);
-    if (mergedQueue == NULL) return NULL;
+    //creates friendship function array for merged queue.
+    FriendshipFunction *mergedFunctions = createFriendFuncArray(q[0]->friendFunc);
+    if (mergedFunctions == NULL) return NULL;
 
-    for (int i = 0; i < size; i++)
-    {
-        Node temp = q[i]->head;
-        while (temp != NULL)
-        {
-            IsraeliQueueEnqueue(mergedQueue, temp->student);
-            temp = temp->next;
+    //creates merged queue.
+    IsraeliQueue mergedQueue = IsraeliQueueCreate(mergedFunctions, compFunc,
+                                                  getFriendshipThresholdForMerged(q, size),
+                                                  getEnemyThresholdForMerged(q, size));
+    if (mergedQueue == NULL){
+        free(mergedFunctions);
+        return NULL;
+    }
+
+    //adds friendship functions to merged queue.
+    int j = 0;
+    for (int i = 1; i < size; i++) {
+        while (q[i]->friendFunc[j] != NULL) {
+            IsraeliQueueAddFriendshipMeasure(mergedQueue,q[i]->friendFunc[j]);
+        }
+    }
+
+    //merge queues.
+    bool notEmpty = true;
+    void* temp = NULL;
+    while(notEmpty){
+        notEmpty = false;
+        for (int i = 0; i < size; i++) {
+            if (q[i]->head != NULL) {
+                temp = IsraeliQueueDequeue(q[i]);
+                IsraeliQueueEnqueue(mergedQueue, temp);
+                notEmpty = true;
+            }
         }
     }
     return mergedQueue;
@@ -295,6 +322,8 @@ int checkFriend(IsraeliQueue q, void* f1, void* f2)
     return STRANGER; //else stranger.
 }
 
+
+
 FriendshipFunction* createFriendFuncArray(FriendshipFunction* friendFunc)
 {
     int size = 0;
@@ -310,7 +339,7 @@ FriendshipFunction* createFriendFuncArray(FriendshipFunction* friendFunc)
     return newFriendFunc;
 }
 
-int getFriendshipThreshold(IsraeliQueue* q, int size){
+int getFriendshipThresholdForMerged(IsraeliQueue* q, int size){
     int friend_th = 0;
     for (int i = 0; i < size; i++) {
         friend_th += q[i]->friend_th;
@@ -318,10 +347,14 @@ int getFriendshipThreshold(IsraeliQueue* q, int size){
     return friend_th / size;
 }
 
-int getEnemyThreshold(IsraeliQueue* q, int size){
-    int enemy_th = 0;
+int getEnemyThresholdForMerged(IsraeliQueue* q, int size){
+    int enemy_th, root = 0;
     for (int i = 0; i < size; i++) {
         enemy_th *= abs(q[i]->friend_th);
     }
-    return enemy_th / size;
+    root = 1/size;
+    return pow(enemy_th, root);
 }
+ FriendshipFunction* createFriendFuncForMerged(IsraeliQueue* q, int size) {
+
+ }
