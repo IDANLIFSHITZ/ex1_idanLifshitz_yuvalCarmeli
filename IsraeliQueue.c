@@ -16,6 +16,8 @@ typedef struct Node
     void* student;
     void* friends[5];
     void* enemies [3];
+    int num_of_friends;
+    int num_of_enemies;
     struct Node* next;
 }*Node;
 
@@ -43,7 +45,7 @@ struct IsraeliQueue_t
  * comparison function, friendship threshold and rivalry threshold. Returns a pointer
  * to the new object. In case of failure, return NULL.*/
 IsraeliQueue IsraeliQueueCreate(FriendshipFunction* friendFunc, ComparisonFunction compFunc, int friend_th, int enemy_th){
-    IsraeliQueue newQueue = malloc(sizeof(IsraeliQueue));
+    IsraeliQueue newQueue = (IsraeliQueue)malloc(sizeof(newQueue));
     if (newQueue == NULL){
         return NULL;
     }
@@ -59,7 +61,7 @@ IsraeliQueue IsraeliQueueCreate(FriendshipFunction* friendFunc, ComparisonFuncti
  * NULL is returned.*/
 IsraeliQueue IsraeliQueueClone(IsraeliQueue q){
     if (q == NULL) return NULL;
-    IsraeliQueue newQueue = malloc(sizeof(IsraeliQueue));
+    IsraeliQueue newQueue = (IsraeliQueue)malloc(sizeof(IsraeliQueue));
     if (newQueue == NULL) return NULL;
 
     newQueue->friendFunc = q->friendFunc;
@@ -115,6 +117,7 @@ IsraeliQueueError IsraeliQueueEnqueue(IsraeliQueue q, void * item)
         }
 
     }
+
 
 
 }
