@@ -1,0 +1,3 @@
+C:/Users/yuval/CLionProjects/ex1_idanLifshitz_yuvalCarmeli/cmake-build-debug/CMakeFiles/ex1_idanLifshitz_yuvalCarmeli.dir
+C:/Users/yuval/CLionProjects/ex1_idanLifshitz_yuvalCarmeli/cmake-build-debug/CMakeFiles/edit_cache.dir
+C:/Users/yuval/CLionProjects/ex1_idanLifshitz_yuvalCarmeli/cmake-build-debug/CMakeFiles/rebuild_cache.dir
