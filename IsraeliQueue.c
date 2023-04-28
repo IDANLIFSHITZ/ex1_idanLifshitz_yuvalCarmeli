@@ -5,6 +5,9 @@
 #include "IsraeliQueue.h"
 #include <stdlib.h>
 
+
+enum {STRANGER, FRIEND, ENEMY};
+
 typedef struct Node
 {
     void* student;
@@ -19,17 +22,16 @@ struct IsraeliQueue_t
 {
     Node head;
     Node tail;
-    int friend_th;
-    int enemy_th;
+    double friend_th;
+    double enemy_th;
     FriendshipFunction* friendFunc;
     ComparisonFunction* compFunc;
 };
 
 
 int checkFriend(IsraeliQueue q, void* f1, void* f2);
-void addFunc(funcArray funcArr, FriendshipFunction func2Add);
+void addFunc(FriendshipFunction* friendFunc , FriendshipFunction func2Add);
 FriendshipFunction* createFriendFuncArray(FriendshipFunction* friendFunc);
-ComparisonFunction* createCompFuncArray(ComparisonFunction* friendFunc);
 
 /**Error clarification:
  * ISRAELIQUEUE_SUCCESS: Indicates the function has completed its task successfully with no errors.
@@ -62,7 +64,7 @@ IsraeliQueue IsraeliQueueClone(IsraeliQueue q){
     if (newQueue == NULL) return NULL;
 
     newQueue->friendFunc = createFriendFuncArray(q->friendFunc);
-    newQueue->compFunc = createCompFuncArray(q->compFunc);
+    newQueue->compFunc = q->compFunc;
     newQueue->friend_th = q->friend_th;
     newQueue->enemy_th = q->enemy_th;
     newQueue->head = NULL;
@@ -89,7 +91,6 @@ void IsraeliQueueDestroy(IsraeliQueue q){
         temp = next;
     }
     free(q);
-
 }
 
 
@@ -100,22 +101,41 @@ void IsraeliQueueDestroy(IsraeliQueue q){
 IsraeliQueueError IsraeliQueueEnqueue(IsraeliQueue q, void * item)
 {
     Node newNode = (Node)malloc(sizeof(Node));
-    if (newNode==NULL) return NULL;
+    if (newNode==NULL) return ISRAELIQUEUE_ALLOC_FAILED; // if allocation failed.
 
     newNode->student = item;
-    Node bf = NULL;
-    Node curr = NULL;
-    bool firstEnemy = false;
-    while (curr != q->tail)
-    {
-        if ()
-        {
+    Node bestFriend = NULL;
+    Node currNode = NULL;
+    int relation = 0;
+    bool firstEnemy = true;
 
+    while (currNode != q->tail) // while not reached tail of back of queue.
+    {
+        relation = checkFriend(q, newNode, currNode); //gets current node relation to new Node.
+        if (relation == FRIEND && bestFriend == NULL) bestFriend = currNode; // if friends and closest friend to front of the line.
+        else if (relation == ENEMY)  // if enemy.
+        {
+            if (firstEnemy) //if first enemy in queue.
+            {
+                firstEnemy = false;
+                currNode->enemies[currNode->enemyNum] = newNode; // save enemies blocked.
+                currNode->enemyNum++;
+            }
+            bestFriend = NULL;
         }
     }
-
-
-
+    if (bestFriend != NULL) // if found a friend to skip the queue to.
+    {
+        int i = 0;
+        newNode->next = bestFriend->next;
+        bestFriend->next = newNode;
+    }
+    else // else goes to back of the queue
+    {
+        q->tail->next = newNode;
+        q->tail = newNode;
+    }
+    return ISRAELIQUEUE_SUCCESS;
 }
 
 /**@param IsraeliQueue: an IsraeliQueue to which the function is to be added
@@ -192,25 +212,19 @@ IsraeliQueue IsraeliQueueMerge(IsraeliQueue*,ComparisonFunction)
 
 int checkFriend(IsraeliQueue q, void* f1, void* f2)
 {
-
+    int sum = 0, sumCount = 0, curr = 0;
+    for (int i = 0; q->friendFunc[i] != NULL; i++) //for friend function in queue.
+    {
+        curr = q->friendFunc[i](f1, f2);
+        if (curr > q->friend_th) return FRIEND; // if fruend.
+        sum += curr;
+        sumCount++;
+    }
+    if (sum/sumCount < q->enemy_th) return ENEMY; //if enemy.
+    return STRANGER; //else stranger.
 }
 
 FriendshipFunction* createFriendFuncArray(FriendshipFunction* friendFunc)
-{
-    int size = 0;
-    for (size = 0; friendFunc[size] != NULL; size++){}
-
-    FriendshipFunction* newFriendFunc = (FriendshipFunction*)malloc(sizeof(FriendshipFunction)*size);
-    if (newFriendFunc==NULL) return NULL;
-
-    for (int i = 0; i < size; i++)
-    {
-        newFriendFunc[i] = friendFunc[i];
-    }
-    return newFriendFunc;
-}
-
-ComparisonFunction* createCompFuncArray(ComparisonFunction* friendFunc)
 {
     int size = 0;
     for (size = 0; friendFunc[size] != NULL; size++){}
