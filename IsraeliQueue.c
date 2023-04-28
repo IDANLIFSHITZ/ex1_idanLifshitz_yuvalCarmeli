@@ -92,7 +92,6 @@ void IsraeliQueueDestroy(IsraeliQueue q){
 
 }
 
-
 /**@param IsraeliQueue: an IsraeliQueue in which to insert the item.
  * @param item: an item to enqueue
  *
@@ -137,29 +136,51 @@ IsraeliQueueError IsraeliQueueAddFriendshipMeasure(IsraeliQueue q, FriendshipFun
 
 /**@param IsraeliQueue: an IsraeliQueue whose friendship threshold is to be modified
  * @param friendship_threshold: a new friendship threshold for the IsraeliQueue*/
-IsraeliQueueError IsraeliQueueUpdateFriendshipThreshold(IsraeliQueue, int)
+IsraeliQueueError IsraeliQueueUpdateFriendshipThreshold(IsraeliQueue q, int FriendshipThreshold)
 {
+    if (q == NULL) return ISRAELIQUEUE_BAD_PARAM;
+    q->friend_th = FriendshipThreshold;
+    return ISRAELIQUEUE_SUCCESS;
 
 }
 
 /**@param IsraeliQueue: an IsraeliQueue whose rivalry threshold is to be modified
  * @param friendship_threshold: a new rivalry threshold for the IsraeliQueue*/
-IsraeliQueueError IsraeliQueueUpdateRivalryThreshold(IsraeliQueue, int)
+IsraeliQueueError IsraeliQueueUpdateRivalryThreshold(IsraeliQueue q, int EnemyThreshold)
+{
+    if (q == NULL) return ISRAELIQUEUE_BAD_PARAM;
+    q->enemy_th = EnemyThreshold;
+    return ISRAELIQUEUE_SUCCESS;
+}
 {
 
 }
 
 /**Returns the number of elements of the given queue. If the parameter is NULL, 0
  * is returned.*/
-int IsraeliQueueSize(IsraeliQueue)
-{
+int IsraeliQueueSize(IsraeliQueue q){
+    if (q == NULL) return 0;
+    int size = 0;
+    Node temp = q->head;
+    while (temp != NULL){
+        size++;
+        temp = temp->next;
+    }
+    return size;
 
 }
 
 /**Removes and returns the foremost element of the provided queue. If the parameter
  * is NULL or a pointer to an empty queue, NULL is returned.*/
-void* IsraeliQueueDequeue(IsraeliQueue)
-{
+void* IsraeliQueueDequeue(IsraeliQueue q){
+    if (q == NULL || q->head == NULL) return NULL;
+
+    Node temp = q->head;
+    void* item = temp->student;
+
+    q->head = temp->next;
+    free(temp);
+    return item;
 
 }
 
@@ -167,8 +188,15 @@ void* IsraeliQueueDequeue(IsraeliQueue)
  *
  * Returns whether the queue contains an element equal to item. If either
  * parameter is NULL, false is returned.*/
-bool IsraeliQueueContains(IsraeliQueue, void *)
+bool IsraeliQueueContains(IsraeliQueue q, void * item)
 {
+    if (q == NULL) return false;
+    Node temp = q->head;
+    while (temp != NULL){
+        if (q->compFunc(temp->student, item) == 0) return true;
+        temp = temp->next;
+    }
+    return false;
 
 }
 
@@ -210,17 +238,3 @@ FriendshipFunction* createFriendFuncArray(FriendshipFunction* friendFunc)
     return newFriendFunc;
 }
 
-ComparisonFunction* createCompFuncArray(ComparisonFunction* friendFunc)
-{
-    int size = 0;
-    for (size = 0; friendFunc[size] != NULL; size++){}
-
-    FriendshipFunction* newFriendFunc = (FriendshipFunction*)malloc(sizeof(FriendshipFunction)*size);
-    if (newFriendFunc==NULL) return NULL;
-
-    for (int i = 0; i < size; i++)
-    {
-        newFriendFunc[i] = friendFunc[i];
-    }
-    return newFriendFunc;
-}
