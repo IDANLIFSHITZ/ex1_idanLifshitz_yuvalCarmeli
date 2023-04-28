@@ -5,6 +5,12 @@
 #include "IsraeliQueue.h"
 #include <stdlib.h>
 
+typedef struct funcArray
+{
+    int size;
+    FriendshipFunction functions[];
+}*funcArray;
+
 typedef struct Node
 {
     void* student;
@@ -16,6 +22,7 @@ typedef struct Node
 struct IsraeliQueue_t
 {
     Node* head;
+    Node* tail;
     int friend_th;
     int enemy_th;
     FriendshipFunction* friendFunc;
@@ -91,8 +98,24 @@ void IsraeliQueueDestroy(IsraeliQueue q){
  * @param item: an item to enqueue
  *
  * Places the item in the foremost position accessible to it.*/
-IsraeliQueueError IsraeliQueueEnqueue(IsraeliQueue, void *)
+IsraeliQueueError IsraeliQueueEnqueue(IsraeliQueue q, void * item)
 {
+    Node newNode = (Node)malloc(sizeof(Node));
+    if (newNode==NULL) return NULL;
+
+    newNode->student = item;
+    Node bf = NULL;
+    Node curr = NULL;
+    bool firstEnemy = false;
+    while (curr != q->tail)
+    {
+        if ()
+        {
+
+        }
+
+    }
+
 
 }
 
