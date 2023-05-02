@@ -1,4 +1,4 @@
-# Install script for directory: C:/Users/yuval/CLionProjects/ex1_idanLifshitz_yuvalCarmeli
+# Install script for directory: C:/Technion/mtm/hw1/ex1_idanLifshitz_yuvalCarmeli
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -45,5 +45,5 @@ endif()
 
 string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
-file(WRITE "C:/Users/yuval/CLionProjects/ex1_idanLifshitz_yuvalCarmeli/cmake-build-debug/${CMAKE_INSTALL_MANIFEST}"
+file(WRITE "C:/Technion/mtm/hw1/ex1_idanLifshitz_yuvalCarmeli/cmake-build-debug/${CMAKE_INSTALL_MANIFEST}"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")
