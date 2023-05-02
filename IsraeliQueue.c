@@ -14,8 +14,6 @@ enum {STRANGER, FRIEND, ENEMY};
 typedef struct Node
 {
     void* student;
-    void* friends[5];
-    void* enemies [3];
     int friendNum;
     int enemyNum;
     struct Node* next;
@@ -34,10 +32,9 @@ struct IsraeliQueue_t
 
 int checkFriend(IsraeliQueue q, void* f1, void* f2);
 FriendshipFunction* createFriendFuncArray(FriendshipFunction* friendFunc);
-ComparisonFunction* createCompFuncArray(ComparisonFunction* friendFunc);
 int getFriendshipThresholdForMerged(IsraeliQueue* , int);
 int getEnemyThresholdForMerged(IsraeliQueue* , int);
-
+bool checkInArr(Node* arr, int size, Node Node2check);
 
 /**Error clarification:
  * ISRAELIQUEUE_SUCCESS: Indicates the function has completed its task successfully with no errors.
@@ -128,13 +125,12 @@ IsraeliQueueError IsraeliQueueEnqueue(IsraeliQueue q, void * item)
     while (currNode != q->tail) // while not reached tail of back of queue.
     {
         relation = checkFriend(q, newNode, currNode); //gets current node relation to new Node.
-        if (relation == FRIEND && bestFriend == NULL) bestFriend = currNode; // if friends and closest friend to front of the line.
+        if (relation == FRIEND && bestFriend == NULL && currNode->friendNum < 5) bestFriend = currNode; // if friends and closest friend to front of the line.
         else if (relation == ENEMY && currNode->enemyNum < 3)  // if enemy.
         {
             if (firstEnemy) //if first enemy in queue.
             {
                 firstEnemy = false;
-                currNode->enemies[currNode->enemyNum] = newNode; // save enemies blocked.
                 currNode->enemyNum++;
             }
             bestFriend = NULL;
@@ -143,6 +139,7 @@ IsraeliQueueError IsraeliQueueEnqueue(IsraeliQueue q, void * item)
     if (bestFriend != NULL) // if found a friend to skip the queue to.
     {
         int i = 0;
+        bestFriend->friendNum++;
         newNode->next = bestFriend->next;
         bestFriend->next = newNode;
         if (q->compFunc(q->tail->student, bestFriend->student) == 0) q->tail = newNode;
@@ -246,11 +243,10 @@ IsraeliQueueError IsraeliQueueImprovePositions(IsraeliQueue q)
     for (int i = 0; i < size; i++)
     {
         Node Node2Advance = NodesArr[i];
-    currNode = q->head;
+        currNode = q->head;
         for (int i = 0; i < size; i++)
         {
-            currNode
-            if ()
+
         }
 
     }
@@ -358,3 +354,12 @@ int getEnemyThresholdForMerged(IsraeliQueue* q, int size){
  FriendshipFunction* createFriendFuncForMerged(IsraeliQueue* q, int size) {
 
  }
+
+bool checkInArr(Node* arr, int size, Node Node2check)
+{
+    for (int i = 0; i < size; i++)
+    {
+        if (arr[i] == Node2check) return true;
+    }
+    return false;
+}
