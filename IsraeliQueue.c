@@ -26,7 +26,7 @@ struct IsraeliQueue_t
     int friend_th;
     int enemy_th;
     FriendshipFunction* friendFunc;
-    ComparisonFunction* compFunc;
+    ComparisonFunction compFunc;
 };
 
 
@@ -34,6 +34,7 @@ int checkFriend(IsraeliQueue q, void* f1, void* f2);
 FriendshipFunction* createFriendFuncArray(FriendshipFunction* friendFunc);
 int getFriendshipThresholdForMerged(IsraeliQueue* , int);
 int getEnemyThresholdForMerged(IsraeliQueue* , int);
+
 bool checkInArr(Node* arr, int size, Node Node2check);
 Node createNewNode(void* student, int friendNum, int enemyNum);
 void enqueueNode(IsraeliQueue q, Node node2Add);
@@ -105,6 +106,7 @@ IsraeliQueue IsraeliQueueClone(IsraeliQueue q) {
     }
     newQueue->tail = currNode;
     return newQueue;
+
 }
 
 /**@param IsraeliQueue: an IsraeliQueue created by IsraeliQueueCreate
@@ -119,6 +121,7 @@ void IsraeliQueueDestroy(IsraeliQueue q){
         free(temp);
         temp = next;
     }
+    free(q->friendFunc);
     free(q);
 
 }
@@ -278,6 +281,7 @@ IsraeliQueue IsraeliQueueMerge(IsraeliQueue* q ,ComparisonFunction compFunc) {
     for (int i = 1; i < size; i++) {
         while (q[i]->friendFunc[j] != NULL) {
             IsraeliQueueAddFriendshipMeasure(mergedQueue,q[i]->friendFunc[j]);
+            j++;
         }
     }
 
