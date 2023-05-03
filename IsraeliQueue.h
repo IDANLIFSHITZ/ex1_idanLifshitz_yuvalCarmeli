@@ -2,8 +2,6 @@
 #define PROVIDED_ISRAELIQUEUE_H
 
 #include <stdbool.h>
-#include <stdlib.h>
-#include <stdio.h>
 
 #define FRIEND_QUOTA 5
 #define RIVAL_QUOTA 3
