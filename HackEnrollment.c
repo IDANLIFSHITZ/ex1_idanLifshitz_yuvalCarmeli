@@ -2,6 +2,8 @@
 // Created by yuval on 5/2/2023.
 //
 #include "IsraeliQueue.h"
+#include <stdlib.h>
+#include <stdio.h>
 
 typedef struct Student{
     char* StudentID;
@@ -10,28 +12,42 @@ typedef struct Student{
     char* name;
     char* surName;
     char* city;
-    char* department
+    char* department;
 
     //hacker parameters
     int* desiredCourses;
     char** friendsId;
     char** enemyId;
-}*Student;
-
-typedef struct studentArr {
-    Student Students;
-    int size;
-}studentArr;
+}*student;
 
 typedef struct course {
-    Israeli
+    IsraeliQueue queue;
+    int courseNumber;
     int size;
 }*course;
 
 
-typedef struct EnrollementSystem {
+typedef struct EnrollmentSystem {
+    student* myStudents;
+    course* course;
+    student* hackers;
+}*EnrollmentSystem;
 
-    studentArr myStudents;
-    int size;
 
-}*EnrollementSystem;
+EnrollmentSystem createEnrollment(FILE* students, FILE* courses, FILE* hackers){
+
+    EnrollmentSystem newSys = (EnrollmentSystem) malloc(sizeof (EnrollmentSystem));
+    if()
+
+
+
+    //get the students information
+    char* StudentID;
+    int totalCredits;
+    int gpa;
+    char* name;
+    char* surName;
+    char* city;
+    char* department;
+    while (fscanf(students, "%s %d %d %s %s %s %s", ))
+}
