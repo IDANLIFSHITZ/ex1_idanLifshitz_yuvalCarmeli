@@ -16,6 +16,8 @@
 
 #define NINTH_DIGIT 1000000
 
+enum {SPACE, NEXT_LINE, END_OF_FILE, ERROR};
+
 typedef struct Student{
     char* StudentID;
     char* name;
@@ -47,11 +49,13 @@ typedef struct EnrollmentSystem {
 }*EnrollmentSystem;
 
 student createNewStudent();
-course createNewCourse()
+course createNewCourse();
 void initStudentArrayOfEnrollmentSystem(EnrollmentSystem sys, FILE* students);
 void initCoursesArrayOfSystem(EnrollmentSystem sys, FILE* courses);
 void initHackersArrayOfSystem(EnrollmentSystem sys, FILE* hackers);
 int getHackerPosInStudentArray(EnrollmentSystem sys, char* hackerID);
+
+int getIDFromFile(char studentID[ID_SIZE], FILE* file2Read);
 
 int compFunc(student s1, student s2);
 int friendshipFuncHackerFile(student s1, student s2);
@@ -347,43 +351,29 @@ int getHackerPosInStudentArray(EnrollmentSystem sys, char* hackerID) {
     return -1;
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-EnrollmentSystem readEnrollment(EnrollmentSystem sys, FILE* queues)
-{
+EnrollmentSystem readEnrollment(EnrollmentSystem sys, FILE* queues) {
     bool isEOF = 0;
-    while (!isEOF)
-    {
-        char* currName = (char*) malloc(ID_SIZE);
-        int currCourseNum = 0;
-        bool isCourseName = true;
-        while (fscanf(queues, "%[^\n] ", currName))
-        {
-            if (isCourseName)
-            {
-                isCourseName = false;
-                sys->course.createCourse()
-            }
-            else
-
+    fgetc(queues);
+    if (feof(queues) == 0) {
+        rewind(queues);
+    } else {
+        return NULL;
+    }
+    while (!isEOF) {
+        int currCourseNum = 0, currEnd = SPACE;
+        fscanf(queues, "%d", &currCourseNum);
+        course currCourse = getCourse(sys->courses, currCourseNum);
+        char currStudentID[ID_SIZE] = "";
+        while (currEnd == SPACE) {/
+            currEnd = getIDFromFile(currStudentID, queues);
+            fgetc(queues);
+            crea
         }
-
-
-
+        if (currEnd == NEXT_LINE) {
+            continue;
+        } else {
+            isEOF = true;
+        }
     }
 }
 
@@ -424,7 +414,6 @@ int friendshipFuncHackerFileHelper(student s1, student s2)
     }
     return NEITHER;
 }
-
 
 int friendshipFuncNameDist(student s1, student s2)
 {
@@ -498,3 +487,28 @@ int compFunc(student s1, student s2)
     return (!strcmp(s1->StudentID, s2->StudentID)); // compare between student IDs.
 }
 
+int getIDFromFile(char studentID[ID_SIZE], FILE* file2Read)
+{
+    for (int i = 0; i < ID_SIZE; i++)
+    {
+        studentID[i] = fgetc(file2Read);
+    }
+    char lastChar = fgetc(file2Read);
+    fseek(file2Read, -1L, SEEK_CUR); // move backwards one character if file stream.
+    if (lastChar == ' ')
+    {
+        return SPACE;
+    }
+    else if (lastChar == '\n')
+    {
+        return NEXT_LINE;
+    }
+    else if (lastChar == EOF)
+    {
+        return END_OF_FILE;
+    }
+    else
+    {
+        return ERROR;
+    }
+}
