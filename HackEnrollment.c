@@ -40,6 +40,7 @@ typedef struct EnrollmentSystem {
 }*EnrollmentSystem;
 
 student createNewStudent();
+course createNewCourse()
 void initStudentArrayOfEnrollmentSystem(EnrollmentSystem sys, FILE* students);
 void initCoursesArrayOfSystem(EnrollmentSystem sys, FILE* courses);
 void initHackersArrayOfSystem(EnrollmentSystem sys, FILE* hackers);
@@ -174,54 +175,6 @@ char firstChar = fgetc(students);
     }
 }
 
-student createNewStudent(){
-    student newStudent = malloc(sizeof(*newStudent));
-    if(newStudent == NULL){
-        return NULL;
-    }
-    newStudent->StudentID = malloc(sizeof(char) * 10);
-    if(newStudent->StudentID == NULL){
-        free(newStudent);
-        return NULL;
-    }
-    newStudent->name = malloc(sizeof(char) * 20);
-    if(newStudent->name == NULL){
-        free(newStudent->StudentID);
-        free(newStudent);
-        return NULL;
-    }
-    newStudent->surName = malloc(sizeof(char) * 20);
-    if(newStudent->surName == NULL){
-        free(newStudent->StudentID);
-        free(newStudent->name);
-        free(newStudent);
-        return NULL;
-    }
-
-}
-
-course createNewCourse(){
-    course newCourse = malloc(sizeof(*newCourse));
-    if(newCourse == NULL){
-        return NULL;
-    }
-    newCourse->courseNumber = 0;
-    newCourse->size = 0;
-
-    FriendshipFunction* ff = malloc(sizeof(FriendshipFunction*));
-    if(ff == NULL){
-        free(newCourse);
-        return NULL;
-    }
-    ff[0] = NULL;
-    //need to fill compFunc
-    newCourse->queue = IsraeliQueueCreate(ff, NULL, 20, 0);
-    if(newCourse->queue == NULL){
-        free(newCourse);
-        return NULL;
-    }
-    return newCourse;
-}
 
 
 void initCoursesArrayOfSystem(EnrollmentSystem sys, FILE* courses) {
@@ -319,6 +272,55 @@ void initHackersArrayOfSystem(EnrollmentSystem sys, FILE* hackers) {
 
 
     }
+}
+
+student createNewStudent(){
+    student newStudent = malloc(sizeof(*newStudent));
+    if(newStudent == NULL){
+        return NULL;
+    }
+    newStudent->StudentID = malloc(sizeof(char) * 10);
+    if(newStudent->StudentID == NULL){
+        free(newStudent);
+        return NULL;
+    }
+    newStudent->name = malloc(sizeof(char) * 20);
+    if(newStudent->name == NULL){
+        free(newStudent->StudentID);
+        free(newStudent);
+        return NULL;
+    }
+    newStudent->surName = malloc(sizeof(char) * 20);
+    if(newStudent->surName == NULL){
+        free(newStudent->StudentID);
+        free(newStudent->name);
+        free(newStudent);
+        return NULL;
+    }
+
+}
+
+course createNewCourse(){
+    course newCourse = malloc(sizeof(*newCourse));
+    if(newCourse == NULL){
+        return NULL;
+    }
+    newCourse->courseNumber = 0;
+    newCourse->size = 0;
+
+    FriendshipFunction* ff = malloc(sizeof(FriendshipFunction*));
+    if(ff == NULL){
+        free(newCourse);
+        return NULL;
+    }
+    ff[0] = NULL;
+    //need to fill compFunc
+    newCourse->queue = IsraeliQueueCreate(ff, NULL, 20, 0);
+    if(newCourse->queue == NULL){
+        free(newCourse);
+        return NULL;
+    }
+    return newCourse;
 }
 
 
