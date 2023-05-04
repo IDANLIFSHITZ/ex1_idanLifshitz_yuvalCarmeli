@@ -46,6 +46,10 @@ void initCoursesArrayOfSystem(EnrollmentSystem sys, FILE* courses);
 void initHackersArrayOfSystem(EnrollmentSystem sys, FILE* hackers);
 int getHackerPosInStudentArray(EnrollmentSystem sys, char* hackerID);
 
+int getIntArraySize(int* arr);
+int getStringArraySize(char** arr);
+
+
 
 EnrollmentSystem createEnrollment(FILE* students, FILE* courses, FILE* hackers){
     EnrollmentSystem sys = malloc(sizeof(*sys));
@@ -242,35 +246,13 @@ void initHackersArrayOfSystem(EnrollmentSystem sys, FILE* hackers) {
         hackerPos = getHackerPosInStudentArray(sys, hackerID);
         sys->hackers[hackersNum] = sys->myStudents[hackerPos];
 
-        //increament the hackers number
-        hackersNum++;
+
 
         //get the backslash n
         currChar = fgetc(hackers);
-        //allocate desired courses array
-        sys->hackers[hackersNum]->desiredCourses = malloc(sizeof(int) * 1);
-        if (sys->hackers[hackersNum]->desiredCourses == NULL) {
-            //need to free all the array
-            free(sys->hackers);
-            return;
-        }
-        //get the first course
-        for(int i = 0; currChar != '\n'; i++){
-            fscanf(hackers, "%d", sys->hackers[hackersNum]->desiredCourses[i]);
-            //if the array is full, need to realloc
-            if (i == sys->hackers[hackersNum]->desiredCoursesSize) {
-                sys->hackers[hackersNum]->desiredCoursesSize++;
-                sys->hackers[hackersNum]->desiredCourses = realloc(sys->hackers[hackersNum]->desiredCourses,
-                                                                   sizeof(int) * sys->hackers[hackersNum]->desiredCoursesSize);
-                if (sys->hackers[hackersNum]->desiredCourses == NULL) {
-                    //need to free all the array
-                    free(sys->hackers);
-                    return;
-                }
-            }//end of realloc
-        }
 
-
+        //increament the hackers number
+        hackersNum++;
     }
 }
 
@@ -324,6 +306,72 @@ course createNewCourse(){
 }
 
 
+void createInitHackerParams(EnrollmentSystem sys, int hackersNum, FILE* hackers){
+    char currChar = '0';
+
+    //allocate desired courses array
+    sys->hackers[hackersNum]->desiredCourses = malloc(sizeof(int) * 1);
+    if (sys->hackers[hackersNum]->desiredCourses == NULL) {
+        //need to free all the array
+        free(sys->hackers);
+        return;
+    }
+
+    sys->hackers[hackersNum]->desiredCourses[0] = 0; // zero for the end of the array
+    //get the first course
+    int desiredCoursesSize = getIntArraySize(sys->hackers[hackersNum]->desiredCourses);
+    for(int i = 0; currChar != '\n'; i++){
+
+        //if the array is full, need to realloc
+        if (sys->hackers[hackersNum]->desiredCourses[i] == 0) {
+            desiredCoursesSize++;
+            sys->hackers[hackersNum]->desiredCourses = realloc(sys->hackers[hackersNum]->desiredCourses,
+                                                               sizeof(int) * desiredCoursesSize);
+            if (sys->hackers[hackersNum]->desiredCourses == NULL) {
+                //need to free all the array
+                free(sys->hackers);
+                return;
+            }
+        }//end of realloc
+
+        sys->hackers[hackersNum]->desiredCourses[desiredCoursesSize] = 0;
+        fscanf(hackers, "%d", sys->hackers[hackersNum]->desiredCourses[i]);
+        currChar = fgetc(hackers);
+    }
+
+    //get friends ID
+    currChar = '0';
+
+    for(int i = 0; currChar != '\n'; i++){
+
+        //if the array is full, need to realloc
+        if (sys->hackers[hackersNum]->desiredCourses[i] == 0) {
+            desiredCoursesSize++;
+            sys->hackers[hackersNum]->desiredCourses = realloc(sys->hackers[hackersNum]->desiredCourses,
+                                                               sizeof(int) * desiredCoursesSize);
+            if (sys->hackers[hackersNum]->desiredCourses == NULL) {
+                //need to free all the array
+                free(sys->hackers);
+                return;
+            }
+        }//end of realloc
+
+        sys->hackers[hackersNum]->desiredCourses[desiredCoursesSize] = 0;
+        fscanf(hackers, "%d", sys->hackers[hackersNum]->desiredCourses[i]);
+        currChar = fgetc(hackers);
+    }
+
+
+
+
+    //get enemies ID
+
+
+
+
+}
+
+
 
 int getHackerPosInStudentArray(EnrollmentSystem sys, char* hackerID){
     for(int i = 0; i < sys->StudentArraySize; i++){
@@ -334,7 +382,20 @@ int getHackerPosInStudentArray(EnrollmentSystem sys, char* hackerID){
     return -1;
 }
 
-
+int getIntArraySize(int* arr){
+    int i = 0;
+    while(arr[i] != NULL){
+        i++;
+    }
+    return i;
+}
+int getStringArraySize(char** arr){
+    int i = 0;
+    while(arr[i] != NULL){
+        i++;
+    }
+    return i;
+}
 
 
 
