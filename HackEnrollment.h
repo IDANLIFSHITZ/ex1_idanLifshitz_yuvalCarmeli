@@ -3,9 +3,9 @@
 
 
 #include "IsraeliQueue.h"
+#include "IsraeliQueue.c"
 #include <stdlib.h>
 #include <stdio.h>
-
 
 typedef struct EnrollmentSystem EnrollmentSystem;
 

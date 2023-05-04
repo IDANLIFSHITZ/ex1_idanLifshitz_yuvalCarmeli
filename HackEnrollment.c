@@ -7,7 +7,16 @@
 #include <string.h>
 
 
+
 #define ID_SIZE 9
+
+#define FRIEND 20
+#define  ENEMY -20
+#define NEITHER 0
+
+#define NINTH_DIGIT 1000000
+
+enum {SPACE, NEXT_LINE, END_OF_FILE, ERROR};
 
 typedef struct Student{
     char* StudentID;
@@ -40,15 +49,20 @@ typedef struct EnrollmentSystem {
 }*EnrollmentSystem;
 
 student createNewStudent();
-course createNewCourse()
+course createNewCourse();
 void initStudentArrayOfEnrollmentSystem(EnrollmentSystem sys, FILE* students);
 void initCoursesArrayOfSystem(EnrollmentSystem sys, FILE* courses);
 void initHackersArrayOfSystem(EnrollmentSystem sys, FILE* hackers);
 int getHackerPosInStudentArray(EnrollmentSystem sys, char* hackerID);
 
-int getIntArraySize(int* arr);
-int getStringArraySize(char** arr);
+int getIDFromFile(char studentID[ID_SIZE], FILE* file2Read);
 
+int compFunc(student s1, student s2);
+int friendshipFuncHackerFile(student s1, student s2);
+int friendshipFuncNameDist(student s1, student s2);
+int friendshipFuncIDSubtract(student s1, student s2);
+int calcNameDiff(char* name1, char* name2);
+int friendshipFuncHackerFileHelper(student s1, student s2);
 
 
 EnrollmentSystem createEnrollment(FILE* students, FILE* courses, FILE* hackers){
@@ -178,7 +192,6 @@ char firstChar = fgetc(students);
         firstChar = fgetc(students);
     }
 }
-
 
 
 void initCoursesArrayOfSystem(EnrollmentSystem sys, FILE* courses) {
@@ -373,9 +386,9 @@ void createInitHackerParams(EnrollmentSystem sys, int hackersNum, FILE* hackers)
 
 
 
-int getHackerPosInStudentArray(EnrollmentSystem sys, char* hackerID){
-    for(int i = 0; i < sys->StudentArraySize; i++){
-        if(strcmp(sys->myStudents[i]->StudentID, hackerID) == 0){
+int getHackerPosInStudentArray(EnrollmentSystem sys, char* hackerID) {
+    for (int i = 0; i < sys->StudentArraySize; i++) {
+        if (strcmp(sys->myStudents[i]->StudentID, hackerID) == 0) {
             return i;
         }
     }
@@ -413,24 +426,29 @@ int getStringArraySize(char** arr){
 
 EnrollmentSystem readEnrollment(EnrollmentSystem sys, FILE* queues)
 {
+EnrollmentSystem readEnrollment(EnrollmentSystem sys, FILE* queues) {
     bool isEOF = 0;
-    while (!isEOF)
-    {
-        char* currName = (char*) malloc(ID_SIZE);
-        bool isCourseName = true;
-        while (fscanf(queues, "%[^\n] ", currName))
-        {
-            if (isCourseName)
-            {
-                isCourseName = false;
-                sys.
-            }
-            else
-
+    fgetc(queues);
+    if (feof(queues) == 0) {
+        rewind(queues);
+    } else {
+        return NULL;
+    }
+    while (!isEOF) {
+        int currCourseNum = 0, currEnd = SPACE;
+        fscanf(queues, "%d", &currCourseNum);
+        course currCourse = getCourse(sys->courses, currCourseNum);
+        char currStudentID[ID_SIZE] = "";
+        while (currEnd == SPACE) {/
+            currEnd = getIDFromFile(currStudentID, queues);
+            fgetc(queues);
+            crea
         }
-
-
-
+        if (currEnd == NEXT_LINE) {
+            continue;
+        } else {
+            isEOF = true;
+        }
     }
 }
 
@@ -439,4 +457,133 @@ void hackEnrollment(EnrollmentSystem sys, FILE* out)
 
 }
 
+int friendshipFuncHackerFile(student s1, student s2)
+{
+    int res = 0;
+    if (s1->friendsId != NULL)
+    {
+        res = friendshipFuncHackerFile(s1, s2);
+    }
+    else if (s2->friendsId != NULL)
+    {
+        res = friendshipFuncHackerFile(s2, s1);
+    }
+    return res;
+}
 
+int friendshipFuncHackerFileHelper(student s1, student s2)
+{
+    for (int i = 0; s1->friendsId[i] != NULL; i++)
+    {
+        if (compFunc(s2, s1->friendsId[i])) // if s2 is friend.
+        {
+            return FRIEND;
+        }
+    }
+    for (int i = 0; s1->enemyId[i] != NULL; i++)
+    {
+        if (compFunc(s2, s1->friendsId[i])) // if s2 is enemy.
+        {
+            return ENEMY;
+        }
+    }
+    return NEITHER;
+}
+
+int friendshipFuncNameDist(student s1, student s2)
+{
+    int sum = 0;
+    if (strlen(s1->name) >= strlen(s2->name)) // if first student name is longer.
+    {
+        sum += calcNameDiff(s1->name, s2->name);
+    }
+    else
+    {
+        sum += calcNameDiff(s2->name, s1->name);
+    }
+    if (strlen(s1->surName) >= strlen(s2->surName)) // if first student surname is longer.
+    {
+        sum += calcNameDiff(s1->surName, s2->surName);
+    }
+    else
+    {
+        sum += calcNameDiff(s2->surName, s1->surName);
+    }
+    return sum;
+}
+
+int calcNameDiff(char* name1, char* name2)
+{
+    int sum = 0;
+    for (int i = 0; i < strlen(name1); i++)
+    {
+        int curr = name1[i];
+        if (i < strlen(name2))
+        {
+            curr += name2[i];
+        }
+        sum += abs(curr);
+    }
+    return sum;
+}
+
+int friendshipFuncIDSubtract(student s1, student s2)
+{
+    int id1 = 0, id2 = 0;
+    for (int i = 1; i < 9; i++) //for digits 1-8 in ID of s1 and s2.
+    {
+        id1 *= 10;
+        id2 *= 10;
+        id1 += s1->StudentID[i];
+        id2 += s2->StudentID[i];
+    }
+    if (s1->StudentID[0] == '-') // if negative ID.
+    {
+        id1 *= -1;
+    }
+    else
+    {
+        id1 += NINTH_DIGIT * s1->StudentID[0];
+    }
+    if (s2->StudentID[0] == '-') // if negative ID.
+    {
+        id2 *= -1;
+    }
+    else
+    {
+        id2 += NINTH_DIGIT * s1->StudentID[0];
+    }
+
+    return abs(id1-id2); // returns abs of difference between IDs.
+}
+
+int compFunc(student s1, student s2)
+{
+    return (!strcmp(s1->StudentID, s2->StudentID)); // compare between student IDs.
+}
+
+int getIDFromFile(char studentID[ID_SIZE], FILE* file2Read)
+{
+    for (int i = 0; i < ID_SIZE; i++)
+    {
+        studentID[i] = fgetc(file2Read);
+    }
+    char lastChar = fgetc(file2Read);
+    fseek(file2Read, -1L, SEEK_CUR); // move backwards one character if file stream.
+    if (lastChar == ' ')
+    {
+        return SPACE;
+    }
+    else if (lastChar == '\n')
+    {
+        return NEXT_LINE;
+    }
+    else if (lastChar == EOF)
+    {
+        return END_OF_FILE;
+    }
+    else
+    {
+        return ERROR;
+    }
+}
