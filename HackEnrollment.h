@@ -7,7 +7,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-typedef enum { SUCCESS, ALLOC_FAILED, BAD_PARAM, ERROR } EnrollmentError;
+typedef enum { SUCCESS, ALLOC_FAILED, BAD_PARAM, ERROR} EnrollmentError;
 
 /**Error clarification:
  * SUCCESS: Indicates the function has completed its task successfully with no errors.

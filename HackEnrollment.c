@@ -51,13 +51,11 @@ typedef struct EnrollmentSystem {
 
 student createNewStudent();
 course createNewCourse();
-int getIntArraySize(int* arr);
-int getStringArraySize(char** arr);
 
 
 
 EnrollmentError initStudentArrayOfEnrollmentSystem(EnrollmentSystem sys, FILE* students);
-void initCoursesArrayOfSystem(EnrollmentSystem sys, FILE* courses);
+EnrollmentError initCoursesArrayOfSystem(EnrollmentSystem sys, FILE* courses);
 void initHackersArrayOfSystem(EnrollmentSystem sys, FILE* hackers);
 
 void createInitHackerParams(EnrollmentSystem sys, int hackersNum, FILE* hackers);
@@ -65,6 +63,18 @@ void createInitHackerParams(EnrollmentSystem sys, int hackersNum, FILE* hackers)
 int getHackerPosInStudentArray(EnrollmentSystem sys, char* hackerID);
 int getIDFromFile(char studentID[ID_SIZE], FILE* file2Read);
 void initAnIDArray(char** arr, int hackersNum, FILE* hackers);
+
+
+EnrollmentError destroyStudent(student s);
+EnrollmentError destroyStudentArrayContent(student* arr, int size);
+
+EnrollmentError destroyCourse(course c);
+EnrollmentError destroyCourseArrayContent(course* arr, int size);
+
+EnrollmentError destroyEnrollmentSystemArraysContent(EnrollmentSystem sys);
+EnrollmentError destroyEnrollmentSystemArrays(EnrollmentSystem sys);
+
+
 
 
 int compFunc(student s1, student s2);
@@ -76,6 +86,7 @@ int friendshipFuncHackerFileHelper(student s1, student s2);
 
 
 EnrollmentSystem createEnrollment(FILE* students, FILE* courses, FILE* hackers){
+    int errorResult;
     EnrollmentSystem sys = malloc(sizeof(*sys));
     if(sys == NULL){
         return NULL;
@@ -104,22 +115,23 @@ EnrollmentSystem createEnrollment(FILE* students, FILE* courses, FILE* hackers){
     //so far so good with no memories, now we need to initialize the arrays
 
 
-    initStudentArrayOfEnrollmentSystem(sys, students);
-
-
-    if(sys->myStudents == NULL){
-        free(sys->courses);
-        free(sys);
-        return NULL;
+    errorResult = initStudentArrayOfEnrollmentSystem(sys, students);
+    if(errorResult != SUCCESS){
+        destroyEnrollmentSystemArrays(sys);
     }
-    initCoursesArrayOfSystem(sys, courses);
-    if(sys->courses == NULL || sys->courses[0] == NULL){
-        free(sys->myStudents);
-        free(sys->courses);
-        free(sys);
-        return NULL;
+    // so far so good with no memory leaks, now we need to initialize the courses array
+
+    errorResult = initCoursesArrayOfSystem(sys, courses);
+    if(errorResult != SUCCESS){
+        if (errorResult == ALLOC_FAILED){
+            destroyStudentArrayContent(sys->myStudents, sys->StudentArraySize);
+        }
+        destroyEnrollmentSystemArrays(sys);
     }
+    // so far so good with no memory leaks, now we need to initialize the hackers array
+
     initHackersArrayOfSystem(sys, hackers);
+
     if (sys->hackers == NULL || sys->hackers[0] == NULL){
         free(sys->myStudents);
         free(sys->courses);
@@ -134,32 +146,39 @@ EnrollmentSystem createEnrollment(FILE* students, FILE* courses, FILE* hackers){
 
 
 EnrollmentError initStudentArrayOfEnrollmentSystem(EnrollmentSystem sys, FILE* students){
+    if (sys == NULL || students == NULL){
+        return BAD_PARAM; // need to free sys arrays on caller
+    }
+
     int studentsNum, discardDouble, discardInt, nameLength = 0;
     int namesSize = 20;
-    char currChar = '0';
+    char currChar ;
+    char* tempName = NULL;
     student s = NULL;
+    student* temp = NULL;
 char firstChar = fgetc(students);
     while(firstChar != EOF){
         currChar = firstChar;
+
         //check if need to realloc the array of students
         if(studentsNum == sys->StudentArraySize){
             sys->StudentArraySize++;
-            sys->myStudents = realloc(sys->myStudents, sizeof(student) * sys->StudentArraySize);
-            if(sys->myStudents == NULL){
-
-                return STUDENT_ARRAY_MEMORY_ERROR;
+            temp = realloc(sys->myStudents, sizeof(student) * sys->StudentArraySize);
+            if(temp == NULL){
+                destroyStudentArrayContent(sys->myStudents, sys->StudentArraySize-1);
+                return ALLOC_FAILED; //only need to free sys on the caller
             }
+            sys->myStudents = temp;
         }// end of realloc check and memory handling
 
 
         //create new student
         s = createNewStudent();
-        if(s == NULL || s->StudentID == NULL || s->name == NULL || s->surName == NULL){
-            //need to call the array destroyer
-            return STUDENT_ARRAY_MEMORY_ERROR; //no need to free, only have to free sys on the caller
+        if(s == NULL){
+            destroyStudentArrayContent(sys->myStudents, sys->StudentArraySize-1);
+            return ALLOC_FAILED; //no need to free, only have to free sys on the caller
         }
-        //store the student in the array
-        sys->myStudents[studentsNum] = s;
+
 
         //get the student ID
         s->StudentID[0] = currChar;
@@ -176,21 +195,25 @@ char firstChar = fgetc(students);
         for(int i = 0 ;currChar != ' '; i++){
             if(nameLength == namesSize-1){
                 namesSize *= 2;
-                s->name = realloc(s->name, sizeof(char) * namesSize);
-                if(s->name == NULL){
-                    //destroy the array of students
-                    return STUDENT_ARRAY_MEMORY_ERROR;
+                tempName = realloc(s->name, sizeof(char) * namesSize);
+                if(tempName == NULL){
+                    destroyStudentArrayContent(sys->myStudents, sys->StudentArraySize-1);
+                    free(s->StudentID);
+                    free(s->name);
+                    free(s);
+                    return ALLOC_FAILED;
                 }
+                s->name = tempName;
             }
             currChar = fgetc(students);
             s->name[i] = currChar;
             nameLength++;
         }
-        s->name[nameLength] = '\0';
-        //discard the space
-        currChar = '0';
+
+        s->name[nameLength] = '\0'; //null terminate the name
 
         //get the surname
+        currChar = '0';
         namesSize = 20;
         nameLength = 0;
         for(int i = 0 ; currChar != ' '; i++){
@@ -198,8 +221,9 @@ char firstChar = fgetc(students);
                 namesSize *= 2;
                 s->surName = realloc(s->surName, sizeof(char) * namesSize);
                 if(s->surName == NULL){
-                    //destroy the array of students
-                    return STUDENT_ARRAY_MEMORY_ERROR; //no need to free, only have to free sys on the caller
+                    destroyStudentArrayContent(sys->myStudents, sys->StudentArraySize-1);
+                    destroyStudent(s);
+                    return ALLOC_FAILED; //no need to free, only have to free sys on the caller
                 }
             }
             currChar = fgetc(students);
@@ -207,46 +231,45 @@ char firstChar = fgetc(students);
             nameLength++;
         }
         s->surName[nameLength] = '\0';
-        //
+
+        //store the student in the array
+        sys->myStudents[studentsNum] = s;
         studentsNum++;
+        //destroy Student s
+        destroyStudent(s);
         firstChar = fgetc(students);
     }
     return SUCCESS;
 }
 
 
-void initCoursesArrayOfSystem(EnrollmentSystem sys, FILE* courses) {
-    int i = 1;
-    int courseNum = 0;
-    sys->courses[0] = createNewCourse();
-    if(sys->courses[0] == NULL || sys->courses[0]->queue == NULL){
-        //need to free all the array
-        free(sys->courses);
-        return;
+EnrollmentError initCoursesArrayOfSystem(EnrollmentSystem sys, FILE* courses) {
+    if (sys == NULL || courses == NULL){
+        return BAD_PARAM ; // need to free sys arrays on caller
     }
-    courseNum++;
+    int i = 0;
+    int courseNum = 0;
+    course* temp = NULL;
+    course newCourse = NULL;
+    newCourse = createNewCourse();
+    if(newCourse == NULL){
+        return ALLOC_FAILED;
+    }
 
-    fscanf(courses,"%d %d\n", sys->courses[0]->courseNumber, sys->courses[0]->size);
-
-    while(fscanf(courses,"%d %d\n", sys->courses[i]->courseNumber, sys->courses[i]->size)!= EOF){
+    while(fscanf(courses,"%d %d\n", newCourse->courseNumber, newCourse->size)!= EOF){
         if(courseNum == sys->courseArraySize){
             sys->courseArraySize++;
-            sys->courses = realloc(sys->courses, sizeof(course) * sys->courseArraySize);
-            if(sys->courses == NULL){
-                //need to free all the array
-                free(sys->courses);
-                return;
+            temp = realloc(sys->courses, sizeof(course) * sys->courseArraySize);
+            if(temp == NULL){
+                destroyCourseArrayContent(sys->courses, sys->courseArraySize-1);
+                return ALLOC_FAILED; // on caller destroy student array content and use destroy sys arrays
             }
+            sys->courses = temp;
         }
-        sys->courses[i] = createNewCourse();
-        if(sys->courses[i] == NULL || sys->courses[i]->queue == NULL){
-            //need to free all the array
-            free(sys->courses);
-            return;
-        }
+        sys->courses[courseNum] = newCourse;
         i++;
     }
-
+    return SUCCESS;
 }
 
 
@@ -287,7 +310,7 @@ void initHackersArrayOfSystem(EnrollmentSystem sys, FILE* hackers) {
         //get the backslash n
         currChar = fgetc(hackers);
 
-        //increament the hackers number
+        //increment the hackers number
         hackersNum++;
     }
 }
@@ -315,12 +338,15 @@ student createNewStudent(){
         free(newStudent);
         return NULL;
     }
+    newStudent->desiredCourses = NULL;
+    newStudent->friendsId = NULL;
+    newStudent->enemiesId = NULL;
 
 }
 
 course createNewCourse(){
 
-    course newCourse = malloc(sizeof(*newCourse));
+    course newCourse = malloc(sizeof(course));
 
     if(newCourse == NULL){
         return NULL;
@@ -338,8 +364,10 @@ course createNewCourse(){
 
     ff[0] = NULL;
     //need to fill compFunc
+
     newCourse->queue = IsraeliQueueCreate(ff, NULL, 20, 0);
     if(newCourse->queue == NULL){
+        free(ff);
         free(newCourse);
         return NULL;
     }
@@ -417,14 +445,14 @@ void initAnIDArray(char** arr, int hackersNum, FILE* hackers) {
             elementsNumber++;
             arr = realloc(arr, sizeof(int) * (elementsNumber+1));
             if (arr == NULL) {
-                //need to do enum of memory errror
+                //need to do enum of memory error
                 return;
             }
         }//end of realloc
 
         arr[i] = malloc(sizeof(char) * ID_SIZE);
         if (arr[i] == NULL){
-            //need to do enum of memory errror
+            //need to do enum of memory error
             return;
         }
         //assert(i > elementsNumber);
@@ -446,21 +474,7 @@ int getHackerPosInStudentArray(EnrollmentSystem sys, char* hackerID) {
 }
 
 
-/** int getIntArraySize(int* arr){
-    int i = 0;
-    while(arr[i] != 0){
-        i++;
-    }
-    return i;
-}
-int getStringArraySize(char** arr){
-    int i = 0;
-    while(arr[i] != NULL){
-        i++;
-    }
-    return i;
-}
-*/
+
 
 
 
@@ -631,4 +645,50 @@ int getIDFromFile(char studentID[ID_SIZE], FILE* file2Read)
     {
         return ERROR;
     }
+}
+
+
+EnrollmentError destroyStudentArrayContent(student* arr, int size)
+{
+    for (int i = 0; i < size; i++)
+    {
+        destroyStudent(arr[i]);
+    }
+    free(arr);
+}
+EnrollmentError destroyStudent(student s){
+    free(s->StudentID);
+    free(s->name);
+    free(s->surName);
+    free(s->friendsId);
+    free(s->enemiesId);
+    free(s);
+}
+
+EnrollmentError destroyCourseArrayContent(course* arr, int size)
+{
+    for (int i = 0; i < size; i++)
+    {
+        destroyCourse(arr[i]);
+    }
+
+}
+
+EnrollmentError destroyCourse(course c){
+    IsraeliQueueDestroy(c->queue);
+    free(c);
+}
+
+
+EnrollmentError destroyEnrollmentSystemArraysContent(EnrollmentSystem sys){
+    destroyStudentArrayContent(sys->myStudents, sys->StudentArraySize);
+    destroyCourseArrayContent(sys->courses, sys->courseArraySize);
+    free(sys);
+}
+
+EnrollmentError destroyEnrollmentSystemArrays(EnrollmentSystem sys){
+    free(sys->myStudents);
+    free(sys->courses);
+    free(sys->hackers);
+    free(sys);
 }
