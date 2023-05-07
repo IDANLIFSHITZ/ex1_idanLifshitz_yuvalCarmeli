@@ -8,17 +8,18 @@
 
 
 
-#define ID_SIZE 9
+#define ID_SIZE 10
 
 #define FRIEND 20
-#define  ENEMY -20
+#define  ENEMY (-20)
 #define NEITHER 0
 
 #define NINTH_DIGIT 1000000
 
-enum {SPACE, NEXT_LINE, END_OF_FILE, ERROR};
+enum {SPACE, NEXT_LINE, END_OF_FILE, READ_ERROR};
 
-typedef struct Student{
+typedef struct Student
+{
     char* StudentID;
     char* name;
     char* surName;
@@ -30,14 +31,16 @@ typedef struct Student{
 }*student;
 
 
-typedef struct course {
+typedef struct course
+{
     IsraeliQueue queue;
     int courseNumber;
     int size;
 }*course;
 
 
-typedef struct EnrollmentSystem {
+typedef struct EnrollmentSystem
+{
     student* myStudents;
     int StudentArraySize;
 
@@ -55,14 +58,21 @@ void initCoursesArrayOfSystem(EnrollmentSystem sys, FILE* courses);
 void initHackersArrayOfSystem(EnrollmentSystem sys, FILE* hackers);
 int getHackerPosInStudentArray(EnrollmentSystem sys, char* hackerID);
 
+void addFriendshipFunctions(IsraeliQueue q);
+
 int getIDFromFile(char studentID[ID_SIZE], FILE* file2Read);
+course getCourse(course* courses, int numOfCourses, int courseNum);
+student getStudent(student* students, int studentArraySize, char* currStudentID);
 
 int compFunc(student s1, student s2);
+
 int friendshipFuncHackerFile(student s1, student s2);
-int friendshipFuncNameDist(student s1, student s2);
-int friendshipFuncIDSubtract(student s1, student s2);
-int calcNameDiff(char* name1, char* name2);
 int friendshipFuncHackerFileHelper(student s1, student s2);
+
+int friendshipFuncNameDist(student s1, student s2);
+int calcNameDiff(char* name1, char* name2);
+
+int friendshipFuncIDSubtract(student s1, student s2);
 
 
 EnrollmentSystem createEnrollment(FILE* students, FILE* courses, FILE* hackers){
@@ -111,7 +121,6 @@ EnrollmentSystem createEnrollment(FILE* students, FILE* courses, FILE* hackers){
 
 }
 
-
 void initStudentArrayOfEnrollmentSystem(EnrollmentSystem sys, FILE* students){
     int studentsNum, discardDouble, discardInt, nameLength = 0;
     int namesSize = 20;
@@ -120,7 +129,7 @@ void initStudentArrayOfEnrollmentSystem(EnrollmentSystem sys, FILE* students){
 char firstChar = fgetc(students);
     while(firstChar != EOF){
         currChar = firstChar;
-        //check if need to realloc the array of students
+        //check if need to reallocate the array of students
         if(studentsNum == sys->StudentArraySize){
             sys->StudentArraySize++;
             sys->myStudents = realloc(sys->myStudents, sizeof(student) * sys->StudentArraySize);
@@ -193,7 +202,6 @@ char firstChar = fgetc(students);
     }
 }
 
-
 void initCoursesArrayOfSystem(EnrollmentSystem sys, FILE* courses) {
     int i = 1;
     int courseNum = 0;
@@ -236,7 +244,7 @@ void initHackersArrayOfSystem(EnrollmentSystem sys, FILE* hackers) {
     while (firstChar != EOF) {
         currChar = firstChar;
 
-        //if the array is full, need to realloc
+        //if the array is full, need to reallocate
         if (hackersNum == sys->hackersArraySize) {
             sys->hackersArraySize++;
             sys->hackers = realloc(sys->hackers, sizeof(hackers) * sys->hackersArraySize);
@@ -245,7 +253,7 @@ void initHackersArrayOfSystem(EnrollmentSystem sys, FILE* hackers) {
                 free(sys->hackers);
                 return;
             }
-        }//end of realloc
+        }//end of reallocate
 
         //get the hacker ID
         hackerID[0] = currChar;
@@ -259,7 +267,7 @@ void initHackersArrayOfSystem(EnrollmentSystem sys, FILE* hackers) {
         hackerPos = getHackerPosInStudentArray(sys, hackerID);
         sys->hackers[hackersNum] = sys->myStudents[hackerPos];
 
-        //increament the hackers number
+        //increment the hackers number
         hackersNum++;
 
         //get the backslash n
@@ -340,8 +348,6 @@ course createNewCourse(){
     return newCourse;
 }
 
-
-
 int getHackerPosInStudentArray(EnrollmentSystem sys, char* hackerID) {
     for (int i = 0; i < sys->StudentArraySize; i++) {
         if (strcmp(sys->myStudents[i]->StudentID, hackerID) == 0) {
@@ -351,30 +357,73 @@ int getHackerPosInStudentArray(EnrollmentSystem sys, char* hackerID) {
     return -1;
 }
 
-EnrollmentSystem readEnrollment(EnrollmentSystem sys, FILE* queues) {
+EnrollmentSystem readEnrollment(EnrollmentSystem sys, FILE* queues)
+{
     bool isEOF = 0;
     fgetc(queues);
-    if (feof(queues) == 0) {
+    if (feof(queues) == 0) // if file is empty.
+    {
         rewind(queues);
-    } else {
+    }
+    else
+    {
         return NULL;
     }
-    while (!isEOF) {
+    while (!isEOF)
+    {
         int currCourseNum = 0, currEnd = SPACE;
         fscanf(queues, "%d", &currCourseNum);
-        course currCourse = getCourse(sys->courses, currCourseNum);
+        course currCourse = getCourse(sys->courses, sys->courseArraySize, currCourseNum);
         char currStudentID[ID_SIZE] = "";
-        while (currEnd == SPACE) {/
+        while (currEnd == SPACE)
+        {
             currEnd = getIDFromFile(currStudentID, queues);
             fgetc(queues);
-            crea
+            student currStudent = getStudent(sys->myStudents, sys->StudentArraySize, currStudentID);
+            IsraeliQueueEnqueue(currCourse->queue, currStudent);
         }
-        if (currEnd == NEXT_LINE) {
+        addFriendshipFunctions(currCourse->queue);
+        if (currEnd == NEXT_LINE)
+        {
             continue;
-        } else {
+        }
+        else
+        {
             isEOF = true;
         }
     }
+}
+
+course getCourse(course* courses, int numOfCourses, int courseNum)
+{
+    course currCourse;
+    for (int i = 0; i < numOfCourses; i++) // for course in courses.
+    {
+        if (courses[i]->courseNumber == courseNum) // if current course is desired course.
+        {
+            return  courses[i];
+        }
+    }
+    return NULL;
+}
+
+student getStudent(student* students, int studentArraySize, char* studentID)
+{
+    for (int i = 0; i < studentArraySize; i++) // for student in students.
+    {
+        if (strcmp(students[i]->StudentID, studentID) == 0)
+        {
+            return students[i];
+        }
+    }
+    return NULL;
+}
+
+void addFriendshipFunctions(IsraeliQueue q)
+{
+    IsraeliQueueAddFriendshipMeasure(q, (int (*)(void*, void*))friendshipFuncHackerFile);
+    IsraeliQueueAddFriendshipMeasure(q, (int (*)(void*, void*))friendshipFuncNameDist);
+    IsraeliQueueAddFriendshipMeasure(q, (int (*)(void*, void*))friendshipFuncIDSubtract);
 }
 
 void hackEnrollment(EnrollmentSystem sys, FILE* out)
@@ -493,6 +542,7 @@ int getIDFromFile(char studentID[ID_SIZE], FILE* file2Read)
     {
         studentID[i] = fgetc(file2Read);
     }
+    studentID[ID_SIZE-1] = 0;
     char lastChar = fgetc(file2Read);
     fseek(file2Read, -1L, SEEK_CUR); // move backwards one character if file stream.
     if (lastChar == ' ')
