@@ -9,7 +9,7 @@
 #include <assert.h>
 
 
-#define ID_SIZE 9
+#define ID_SIZE 10
 
 #define FRIEND 20
 #define  ENEMY (-20)
@@ -17,9 +17,10 @@
 
 #define NINTH_DIGIT 1000000
 
-enum {SPACE, NEXT_LINE, END_OF_FILE, ERROR};
+enum {SPACE, NEXT_LINE, END_OF_FILE, READ_ERROR};
 
-typedef struct Student{
+typedef struct Student
+{
     char* StudentID;
     char* name;
     char* surName;
@@ -31,14 +32,16 @@ typedef struct Student{
 }*student;
 
 
-typedef struct course {
+typedef struct course
+{
     IsraeliQueue queue;
     int courseNumber;
     int size;
 }*course;
 
 
-typedef struct EnrollmentSystem {
+typedef struct EnrollmentSystem
+{
     student* myStudents;
     int StudentArraySize;
 
@@ -61,7 +64,12 @@ void initHackersArrayOfSystem(EnrollmentSystem sys, FILE* hackers);
 void createInitHackerParams(EnrollmentSystem sys, int hackersNum, FILE* hackers);
 
 int getHackerPosInStudentArray(EnrollmentSystem sys, char* hackerID);
+
+void addFriendshipFunctions(IsraeliQueue q);
+
 int getIDFromFile(char studentID[ID_SIZE], FILE* file2Read);
+course getCourse(course* courses, int numOfCourses, int courseNum);
+student getStudent(student* students, int studentArraySize, char* currStudentID);
 void initAnIDArray(char** arr, int hackersNum, FILE* hackers);
 
 
@@ -78,11 +86,14 @@ EnrollmentError destroyEnrollmentSystemArrays(EnrollmentSystem sys);
 
 
 int compFunc(student s1, student s2);
+
 int friendshipFuncHackerFile(student s1, student s2);
-int friendshipFuncNameDist(student s1, student s2);
-int friendshipFuncIDSubtract(student s1, student s2);
-int calcNameDiff(char* name1, char* name2);
 int friendshipFuncHackerFileHelper(student s1, student s2);
+
+int friendshipFuncNameDist(student s1, student s2);
+int calcNameDiff(char* name1, char* name2);
+
+int friendshipFuncIDSubtract(student s1, student s2);
 
 
 EnrollmentSystem createEnrollment(FILE* students, FILE* courses, FILE* hackers){
@@ -473,49 +484,79 @@ int getHackerPosInStudentArray(EnrollmentSystem sys, char* hackerID) {
     return -1;
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-EnrollmentSystem readEnrollment(EnrollmentSystem sys, FILE* queues) {
+EnrollmentSystem readEnrollment(EnrollmentSystem sys, FILE* queues)
+{
     bool isEOF = 0;
     fgetc(queues);
-    if (feof(queues) == 0) {
+    if (feof(queues) == 0) // if file is empty.
+    {
         rewind(queues);
-    } else {
+    }
+    else
+    {
         return NULL;
     }
-    while (!isEOF) {
+    while (!isEOF)
+    {
         int currCourseNum = 0, currEnd = SPACE;
         fscanf(queues, "%d", &currCourseNum);
-        course currCourse = getCourse(sys->courses, currCourseNum);
+        course currCourse = getCourse(sys->courses, sys->courseArraySize, currCourseNum);
         char currStudentID[ID_SIZE] = "";
-        while (currEnd == SPACE) {/
+        while (currEnd == SPACE)
+        {
             currEnd = getIDFromFile(currStudentID, queues);
             fgetc(queues);
-            crea
+            student currStudent = getStudent(sys->myStudents, sys->StudentArraySize, currStudentID);
+            IsraeliQueueEnqueue(currCourse->queue, currStudent);
         }
-        if (currEnd == NEXT_LINE) {
+        addFriendshipFunctions(currCourse->queue);
+        if (currEnd == NEXT_LINE)
+        {
             continue;
-        } else {
+        }
+        else
+        {
             isEOF = true;
         }
     }
 }
 
+course getCourse(course* courses, int numOfCourses, int courseNum)
+{
+    course currCourse;
+    for (int i = 0; i < numOfCourses; i++) // for course in courses.
+    {
+        if (courses[i]->courseNumber == courseNum) // if current course is desired course.
+        {
+            return  courses[i];
+        }
+    }
+    return NULL;
+}
+
+student getStudent(student* students, int studentArraySize, char* studentID)
+{
+    for (int i = 0; i < studentArraySize; i++) // for student in students.
+    {
+        if (strcmp(students[i]->StudentID, studentID) == 0)
+        {
+            return students[i];
+        }
+    }
+    return NULL;
+}
+
+void addFriendshipFunctions(IsraeliQueue q)
+{
+    IsraeliQueueAddFriendshipMeasure(q, (int (*)(void*, void*))friendshipFuncHackerFile);
+    IsraeliQueueAddFriendshipMeasure(q, (int (*)(void*, void*))friendshipFuncNameDist);
+    IsraeliQueueAddFriendshipMeasure(q, (int (*)(void*, void*))friendshipFuncIDSubtract);
+}
+
+void hackEnrollment(EnrollmentSystem sys, FILE* out)
+{
+
+}
 
 int friendshipFuncHackerFile(student s1, student s2)
 {
@@ -540,7 +581,7 @@ int friendshipFuncHackerFileHelper(student s1, student s2)
             return FRIEND;
         }
     }
-    for (int i = 0; s1->enemyId[i] != NULL; i++)
+    for (int i = 0; s1->enemiesId[i] != NULL; i++)
     {
         if (compFunc(s2, s1->friendsId[i])) // if s2 is enemy.
         {
@@ -572,7 +613,8 @@ int friendshipFuncNameDist(student s1, student s2)
     return sum;
 }
 
-int calcNameDiff(char* name1, char* name2) {
+int calcNameDiff(char* name1, char* name2)
+{
     int sum = 0;
     for (int i = 0; i < strlen(name1); i++)
     {
@@ -589,30 +631,13 @@ int calcNameDiff(char* name1, char* name2) {
 int friendshipFuncIDSubtract(student s1, student s2)
 {
     int id1 = 0, id2 = 0;
-    for (int i = 1; i < 9; i++) //for digits 1-8 in ID of s1 and s2.
+    for (int i = 0; i < 9; i++) //for digits in ID of s1 and s2.
     {
         id1 *= 10;
         id2 *= 10;
         id1 += s1->StudentID[i];
         id2 += s2->StudentID[i];
     }
-    if (s1->StudentID[0] == '-') // if negative ID.
-    {
-        id1 *= -1;
-    }
-    else
-    {
-        id1 += NINTH_DIGIT * s1->StudentID[0];
-    }
-    if (s2->StudentID[0] == '-') // if negative ID.
-    {
-        id2 *= -1;
-    }
-    else
-    {
-        id2 += NINTH_DIGIT * s1->StudentID[0];
-    }
-
     return abs(id1-id2); // returns abs of difference between IDs.
 }
 
@@ -627,6 +652,7 @@ int getIDFromFile(char studentID[ID_SIZE], FILE* file2Read)
     {
         studentID[i] = fgetc(file2Read);
     }
+    studentID[ID_SIZE-1] = 0;
     char lastChar = fgetc(file2Read);
     fseek(file2Read, -1L, SEEK_CUR); // move backwards one character if file stream.
     if (lastChar == ' ')
