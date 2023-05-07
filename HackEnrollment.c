@@ -551,7 +551,7 @@ int friendshipFuncHackerFileHelper(student s1, student s2)
             return FRIEND;
         }
     }
-    for (int i = 0; s1->enemyId[i] != NULL; i++)
+    for (int i = 0; s1->enemiesId[i] != NULL; i++)
     {
         if (compFunc(s2, s1->friendsId[i])) // if s2 is enemy.
         {
@@ -601,30 +601,13 @@ int calcNameDiff(char* name1, char* name2)
 int friendshipFuncIDSubtract(student s1, student s2)
 {
     int id1 = 0, id2 = 0;
-    for (int i = 1; i < 9; i++) //for digits 1-8 in ID of s1 and s2.
+    for (int i = 0; i < 9; i++) //for digits in ID of s1 and s2.
     {
         id1 *= 10;
         id2 *= 10;
         id1 += s1->StudentID[i];
         id2 += s2->StudentID[i];
     }
-    if (s1->StudentID[0] == '-') // if negative ID.
-    {
-        id1 *= -1;
-    }
-    else
-    {
-        id1 += NINTH_DIGIT * s1->StudentID[0];
-    }
-    if (s2->StudentID[0] == '-') // if negative ID.
-    {
-        id2 *= -1;
-    }
-    else
-    {
-        id2 += NINTH_DIGIT * s1->StudentID[0];
-    }
-
     return abs(id1-id2); // returns abs of difference between IDs.
 }
 
