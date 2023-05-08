@@ -1,13 +1,8 @@
-//
-// Created by yuval on 5/2/2023.
-//
 #include "IsraeliQueue.h"
 #include "HackEnrollment.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <assert.h>
-
 
 #define ID_SIZE 10
 
@@ -17,7 +12,7 @@
 
 #define COURSE_SUCCESS_TH 2
 
-enum {SPACE, NEXT_LINE, END_OF_FILE, READ_ERROR};
+enum {SPACE, NEXT_LINE, END_OF_FILE};
 
 typedef struct Student
 {
@@ -113,19 +108,20 @@ EnrollmentSystem createEnrollment(FILE* students, FILE* courses, FILE* hackers){
     sys->StudentArraySize = 1;
     sys->courseArraySize = 1;
     sys->hackersArraySize = 1;
-    sys->myStudents = malloc(sizeof(student));
+    sys->myStudents = malloc(sizeof(student*));
     if(sys->myStudents == NULL){
         free(sys);
         return NULL;
     }
-    sys->courses = malloc(sizeof(course));
+    sys->courses = malloc(sizeof(course*));
     if(sys->courses == NULL){
         free(sys->myStudents);
         free(sys);
         return NULL;
     }
-    sys->hackers = malloc(sizeof(student));
-    if(sys->hackers == NULL){
+    sys->hackers = malloc(sizeof(student*));
+    if(sys->hackers == NULL)
+    {
         free(sys->myStudents);
         free(sys->courses);
         free(sys);
@@ -135,14 +131,17 @@ EnrollmentSystem createEnrollment(FILE* students, FILE* courses, FILE* hackers){
 
 
     errorResult = initStudentArrayOfEnrollmentSystem(sys, students);
-    if(errorResult != SUCCESS){
+    if(errorResult != SUCCESS)
+    {
         destroyEnrollmentSystemArrays(sys);
     }
     // so far so good with no memory leaks, now we need to initialize the courses array
 
     errorResult = initCoursesArrayOfSystem(sys, courses);
-    if(errorResult != SUCCESS){
-        if (errorResult == ALLOC_FAILED){
+    if(errorResult != SUCCESS)
+    {
+        if (errorResult == ALLOC_FAILED)
+        {
             destroyStudentArrayContent(sys->myStudents, sys->StudentArraySize);
         }
         destroyEnrollmentSystemArrays(sys);
@@ -165,22 +164,26 @@ EnrollmentSystem createEnrollment(FILE* students, FILE* courses, FILE* hackers){
 
 
 EnrollmentError initStudentArrayOfEnrollmentSystem(EnrollmentSystem sys, FILE* students){
-    if (sys == NULL || students == NULL){
+    if (sys == NULL || students == NULL)
+    {
         return BAD_PARAM; // need to free sys arrays on caller
     }
 
-    int studentsNum, discardDouble, discardInt, nameLength = 0;
+    int studentsNum = 0, discardInt, nameLength = 0;
+    double discardDouble = 0;
     int namesSize = 20;
-    char currChar ;
+    char currChar;
     char* tempName = NULL;
     student s = NULL;
     student* temp = NULL;
-char firstChar = fgetc(students);
-    while(firstChar != EOF){
+    char firstChar = (char)fgetc(students);
+    while(firstChar != EOF)
+    {
         currChar = firstChar;
 
-        //check if need to realloc the array of students
-        if(studentsNum == sys->StudentArraySize){
+        //check if need to reallocate the array of students
+        if(studentsNum == sys->StudentArraySize)
+        {
             sys->StudentArraySize++;
             temp = realloc(sys->myStudents, sizeof(student) * sys->StudentArraySize);
             if(temp == NULL){
@@ -188,7 +191,7 @@ char firstChar = fgetc(students);
                 return ALLOC_FAILED; //only need to free sys on the caller
             }
             sys->myStudents = temp;
-        }// end of realloc check and memory handling
+        }// end of reallocate check and memory handling
 
 
         //create new student
@@ -203,7 +206,7 @@ char firstChar = fgetc(students);
         s->StudentID[0] = currChar;
         for (int i = 1; i < 9; i++) {
             s->StudentID[i] = currChar;
-            currChar = fgetc(students);
+            currChar = (char)fgetc(students);
         }
         s->StudentID[9] = '\0';
 
@@ -211,11 +214,14 @@ char firstChar = fgetc(students);
         fscanf(students, " %d %lf ", &discardInt, &discardDouble);
 
         //get the name
-        for(int i = 0 ;currChar != ' '; i++){
-            if(nameLength == namesSize-1){
+        for(int i = 0; currChar != ' '; i++)
+        {
+            if(nameLength == namesSize-1)
+            {
                 namesSize *= 2;
                 tempName = realloc(s->name, sizeof(char) * namesSize);
-                if(tempName == NULL){
+                if(tempName == NULL)
+                {
                     destroyStudentArrayContent(sys->myStudents, sys->StudentArraySize-1);
                     free(s->StudentID);
                     free(s->name);
@@ -224,7 +230,7 @@ char firstChar = fgetc(students);
                 }
                 s->name = tempName;
             }
-            currChar = fgetc(students);
+            currChar = (char)fgetc(students);
             s->name[i] = currChar;
             nameLength++;
         }
@@ -245,7 +251,7 @@ char firstChar = fgetc(students);
                     return ALLOC_FAILED; //no need to free, only have to free sys on the caller
                 }
             }
-            currChar = fgetc(students);
+            currChar = (char)fgetc(students);
             s->surName[i] = currChar;
             nameLength++;
         }
@@ -256,14 +262,15 @@ char firstChar = fgetc(students);
         studentsNum++;
         //destroy Student s
         destroyStudent(s);
-        firstChar = fgetc(students);
+        firstChar = (char)fgetc(students);
     }
     return SUCCESS;
 }
 
 
 EnrollmentError initCoursesArrayOfSystem(EnrollmentSystem sys, FILE* courses) {
-    if (sys == NULL || courses == NULL){
+    if (sys == NULL || courses == NULL)
+    {
         return BAD_PARAM ; // need to free sys arrays on caller
     }
     int i = 0;
@@ -271,15 +278,19 @@ EnrollmentError initCoursesArrayOfSystem(EnrollmentSystem sys, FILE* courses) {
     course* temp = NULL;
     course newCourse = NULL;
     newCourse = createNewCourse();
-    if(newCourse == NULL){
+    if(newCourse == NULL)
+    {
         return ALLOC_FAILED;
     }
 
-    while(fscanf(courses,"%d %d\n", newCourse->courseNumber, newCourse->size)!= EOF){
-        if(courseNum == sys->courseArraySize){
+    while(fscanf(courses,"%d %d\n", newCourse->courseNumber, newCourse->size)!= EOF)
+    {
+        if(courseNum == sys->courseArraySize)
+        {
             sys->courseArraySize++;
             temp = realloc(sys->courses, sizeof(course) * sys->courseArraySize);
-            if(temp == NULL){
+            if(temp == NULL)
+            {
                 destroyCourseArrayContent(sys->courses, sys->courseArraySize-1);
                 return ALLOC_FAILED; // on caller destroy student array content and use destroy sys arrays
             }
@@ -324,7 +335,7 @@ void initHackersArrayOfSystem(EnrollmentSystem sys, FILE* hackers) {
         sys->hackers[hackersNum] = sys->myStudents[hackerPos];
 
         //parse all of the hacker information from the file. (courses, friends, enemies)
-        createInitHackerParams(sys->hackers[hackersNum], hackersNum, hackers);
+        createInitHackerParams(sys, hackersNum, hackers); // changed here! createInitHackerParams(sys->hackers[hackersNum], hackersNum, hackers);
 
         //get the backslash n
         currChar = fgetc(hackers);
@@ -375,18 +386,18 @@ course createNewCourse(){
 
     newCourse->size = 0;
 
-    FriendshipFunction* ff = malloc(sizeof(FriendshipFunction*));
-    if(ff == NULL){
+    FriendshipFunction* friendshipFunctionArr = malloc(sizeof(FriendshipFunction*));
+    if(friendshipFunctionArr == NULL){
         free(newCourse);
         return NULL;
     }
 
-    ff[0] = NULL;
+    friendshipFunctionArr[0] = NULL;
     //need to fill compFunc
 
-    newCourse->queue = IsraeliQueueCreate(ff, NULL, 20, 0);
+    newCourse->queue = IsraeliQueueCreate(friendshipFunctionArr, (int (*)(void*, void*))compFunc, 20, 0);
     if(newCourse->queue == NULL){
-        free(ff);
+        free(friendshipFunctionArr);
         free(newCourse);
         return NULL;
     }
@@ -410,7 +421,7 @@ void createInitHackerParams(EnrollmentSystem sys, int hackersNum, FILE* hackers)
     int numOfCourses = 0;
     for(int i = 0; currChar != '\n'; i++){
 
-        //if the array is full, need to realloc
+        //if the array is full, need to reallocate
         if (sys->hackers[hackersNum]->desiredCourses[i] == 0)
         {
             numOfCourses++;
@@ -421,7 +432,7 @@ void createInitHackerParams(EnrollmentSystem sys, int hackersNum, FILE* hackers)
                 free(sys->hackers);
                 return;
             }
-        }//end of realloc
+        }//end of reallocate
 
         sys->hackers[hackersNum]->desiredCourses[numOfCourses] = 0;
         fscanf(hackers, "%d", sys->hackers[hackersNum]->desiredCourses[i]);
@@ -457,9 +468,9 @@ void createInitHackerParams(EnrollmentSystem sys, int hackersNum, FILE* hackers)
 void initAnIDArray(char** arr, int hackersNum, FILE* hackers) {
     char currChar = '0';
     int elementsNumber = 0;
-    for (int i = 0; currChar != '\n'; i++) {
-
-        //if the array is full, need to realloc
+    for (int i = 0; currChar != '\n'; i++)
+    {
+        //if the array is full, need to reallocate
         if (arr[i] == NULL) {
             elementsNumber++;
             arr = realloc(arr, sizeof(int) * (elementsNumber+1));
@@ -467,7 +478,7 @@ void initAnIDArray(char** arr, int hackersNum, FILE* hackers) {
                 //need to do enum of memory error
                 return;
             }
-        }//end of realloc
+        }//end of reallocate
 
         arr[i] = malloc(sizeof(char) * ID_SIZE);
         if (arr[i] == NULL){
@@ -568,11 +579,11 @@ student getStudent(student* students, int studentArraySize, char* studentID)
     return NULL;
 }
 
-void addFriendshipFunctions(IsraeliQueue q)
+void addFriendshipFunctions(IsraeliQueue queue)
 {
-    IsraeliQueueAddFriendshipMeasure(q, (int (*)(void*, void*))friendshipFuncHackerFile);
-    IsraeliQueueAddFriendshipMeasure(q, (int (*)(void*, void*))friendshipFuncNameDist);
-    IsraeliQueueAddFriendshipMeasure(q, (int (*)(void*, void*))friendshipFuncIDSubtract);
+    IsraeliQueueAddFriendshipMeasure(queue, (int (*)(void*, void*))friendshipFuncHackerFile);
+    IsraeliQueueAddFriendshipMeasure(queue, (int (*)(void*, void*))friendshipFuncNameDist);
+    IsraeliQueueAddFriendshipMeasure(queue, (int (*)(void*, void*))friendshipFuncIDSubtract);
 }
 
 void hackEnrollment(EnrollmentSystem sys, FILE* out)
@@ -597,7 +608,7 @@ void hackEnrollment(EnrollmentSystem sys, FILE* out)
             return;
         }
     }
-    printCourses2File(sys, out)
+    printCourses2File(sys, out);
 }
 
 int friendshipFuncHackerFile(student s1, student s2)
@@ -618,14 +629,14 @@ int friendshipFuncHackerFileHelper(student s1, student s2)
 {
     for (int i = 0; s1->friendsId[i] != NULL; i++)
     {
-        if (compFunc(s2, s1->friendsId[i])) // if s2 is friend.
+        if (strcmp(s2->StudentID, s1->friendsId[i]) == 0) // if s2 is friend.
         {
             return FRIEND;
         }
     }
     for (int i = 0; s1->enemiesId[i] != NULL; i++)
     {
-        if (compFunc(s2, s1->friendsId[i])) // if s2 is enemy.
+        if (strcmp(s2->StudentID, s1->friendsId[i]) == 0) // if s2 is enemy.
         {
             return ENEMY;
         }
@@ -732,7 +743,8 @@ bool isInCourse(course course2Check, student student2Find)
 
 bool checkSatisfiedHacker(int countSuccessCourses, student hacker)
 {
-    if (countSuccessCourses == COURSE_SUCCESS_TH - 1 && getIntArraySize(hacker->desiredCourses) == 1)
+    if (countSuccessCourses == COURSE_SUCCESS_TH - 1 && hacker->desiredCourses[0] != NULL
+    && hacker->desiredCourses[1] == NULL)
     {
         return true;
     }
