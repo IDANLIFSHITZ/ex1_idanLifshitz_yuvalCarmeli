@@ -1,18 +1,5 @@
 # ninja log v5
-2	245	7052610021750229	CMakeFiles/ex1_idanLifshitz_yuvalCarmeli.dir/IsraeliQueue.c.obj	5fc73eef0c6621
-0	1445	7052443524840537	CMakeFiles/ex1_idanLifshitz_yuvalCarmeli.dir/main.c.obj	ed0ad4f310c2d29a
-9	266	7052610022079352	CMakeFiles/ex1_idanLifshitz_yuvalCarmeli.dir/HackEnrollment.c.obj	25e162b45355228
-266	423	7052610023622311	ex1_idanLifshitz_yuvalCarmeli.exe	89ee403a135fb70e
-3	401	7052631350776816	CMakeFiles/ex1_idanLifshitz_yuvalCarmeli.dir/main.c.obj	ed0ad4f310c2d29a
-9	452	7052631352123205	CMakeFiles/ex1_idanLifshitz_yuvalCarmeli.dir/HackEnrollment.c.obj	25e162b45355228
-452	767	7052631355222514	ex1_idanLifshitz_yuvalCarmeli.exe	89ee403a135fb70e
-2	156	7052632885863199	CMakeFiles/ex1_idanLifshitz_yuvalCarmeli.dir/main.c.obj	ed0ad4f310c2d29a
-157	363	7052632887893547	ex1_idanLifshitz_yuvalCarmeli.exe	89ee403a135fb70e
-2	87	7052633150144326	CMakeFiles/ex1_idanLifshitz_yuvalCarmeli.dir/main.c.obj	ed0ad4f310c2d29a
-88	221	7052633151430867	ex1_idanLifshitz_yuvalCarmeli.exe	89ee403a135fb70e
-2	140	7052636517760362	CMakeFiles/ex1_idanLifshitz_yuvalCarmeli.dir/IsraeliQueue.c.obj	5fc73eef0c6621
-141	278	7052636519086821	ex1_idanLifshitz_yuvalCarmeli.exe	89ee403a135fb70e
-2	199	7052638260360994	CMakeFiles/ex1_idanLifshitz_yuvalCarmeli.dir/IsraeliQueue.c.obj	5fc73eef0c6621
-199	461	7052638262764813	ex1_idanLifshitz_yuvalCarmeli.exe	89ee403a135fb70e
 2	192	7052656510969714	CMakeFiles/ex1_idanLifshitz_yuvalCarmeli.dir/IsraeliQueue.c.obj	5fc73eef0c6621
+2	87	7052633150144326	CMakeFiles/ex1_idanLifshitz_yuvalCarmeli.dir/main.c.obj	ed0ad4f310c2d29a
+9	452	7052631352123205	CMakeFiles/ex1_idanLifshitz_yuvalCarmeli.dir/HackEnrollment.c.obj	25e162b45355228
 193	383	7052656512844868	ex1_idanLifshitz_yuvalCarmeli.exe	89ee403a135fb70e
