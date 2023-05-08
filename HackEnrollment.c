@@ -60,7 +60,7 @@ EnrollmentError initStudentArrayOfEnrollmentSystem(EnrollmentSystem sys, FILE* s
 EnrollmentError initCoursesArrayOfSystem(EnrollmentSystem sys, FILE* courses);
 EnrollmentError initHackersArrayOfSystem(EnrollmentSystem sys, FILE* hackers);
 
-EnrollmentError InitHackerParams(EnrollmentSystem sys, int hackersNum, FILE* hackers);
+EnrollmentError InitHackerParams(student hacker, FILE* hackers);
 
 int getHackerPosInStudentArray(EnrollmentSystem sys, char* hackerID);
 
@@ -69,7 +69,7 @@ void addFriendshipFunctions(IsraeliQueue q);
 int getIDFromFile(char studentID[ID_SIZE], FILE* file2Read);
 course getCourse(course* courses, int numOfCourses, int courseNum);
 student getStudent(student* students, int studentArraySize, char* currStudentID);
-EnrollmentError initAnIDArray(char** arr, int hackersNum, FILE* hackers);
+EnrollmentError initAnIDArray(char** arr, FILE* hackers);
 
 
 EnrollmentError destroyStudent(student s);
@@ -183,6 +183,7 @@ char firstChar = fgetc(students);
             sys->StudentArraySize++;
             temp = realloc(sys->myStudents, sizeof(student) * sys->StudentArraySize);
             if(temp == NULL){
+                sys->StudentArraySize--;
                 destroyStudentArrayContent(sys->myStudents, sys->StudentArraySize-1);
                 return ALLOC_FAILED; //only need to free sys on the caller
             }
@@ -279,6 +280,7 @@ EnrollmentError initCoursesArrayOfSystem(EnrollmentSystem sys, FILE* courses) {
             sys->courseArraySize++;
             temp = realloc(sys->courses, sizeof(course) * sys->courseArraySize);
             if(temp == NULL){
+                sys->courseArraySize--;
                 destroyCourseArrayContent(sys->courses, sys->courseArraySize-1);
                 return ALLOC_FAILED; // on caller destroy student array content and use destroy sys arrays
             }
@@ -294,6 +296,7 @@ EnrollmentError initCoursesArrayOfSystem(EnrollmentSystem sys, FILE* courses) {
 EnrollmentError initHackersArrayOfSystem(EnrollmentSystem sys, FILE* hackers) {
     int hackersNum, hackerPos, errorResult = 0;
     char currChar;
+    student hacker = NULL;
     student* temp = NULL;
     char hackerID[10];
     char firstChar = fgetc(hackers);
@@ -305,7 +308,8 @@ EnrollmentError initHackersArrayOfSystem(EnrollmentSystem sys, FILE* hackers) {
             sys->hackersArraySize++;
             temp = realloc(sys->hackers, sizeof(hackers) * sys->hackersArraySize);
             if (temp == NULL) {
-                return ALLOC_FAILED; //need to free all sys
+                sys->hackersArraySize--;
+                return ALLOC_FAILED; //need to free all sys arrays content and arrays on caller
             }
         }//end of realloc
         sys->hackers = temp;
@@ -313,14 +317,14 @@ EnrollmentError initHackersArrayOfSystem(EnrollmentSystem sys, FILE* hackers) {
         //get the hacker ID
         getIDFromFile(hackerID, hackers);
 
-        //get the hacker position in the student array and put it in the hackers array
+        //get the hacker position in the student array
         hackerPos = getHackerPosInStudentArray(sys, hackerID);
-
+        hacker = sys->myStudents[hackerPos];
 
         //parse all of the hacker information from the file. (courses, friends, enemies)
-        errorResult = InitHackerParams(sys, hackersNum, hackers);
+        errorResult = InitHackerParams(hacker, hackers);
         if(errorResult == ALLOC_FAILED){
-
+            return ALLOC_FAILED; //need to free all sys arrays content and arrays on caller
         }
         //get the backslash n
         firstChar = fgetc(hackers);
@@ -331,6 +335,7 @@ EnrollmentError initHackersArrayOfSystem(EnrollmentSystem sys, FILE* hackers) {
         //increment the hackers number
         hackersNum++;
     }
+    return SUCCESS;
 }
 
 student createNewStudent(){
@@ -393,59 +398,57 @@ course createNewCourse(){
 }
 
 
-EnrollmentError InitHackerParams(EnrollmentSystem sys, int hackersNum, FILE* hackers){
+EnrollmentError InitHackerParams(student hacker, FILE* hackers){
     char currChar = '0';
     int* temp = NULL;
     int errorResult = 0;
     //allocate desired courses array
-    sys->hackers[hackersNum]->desiredCourses = malloc(sizeof(int) * 1);
-    if (sys->hackers[hackersNum]->desiredCourses == NULL) {
+    hacker->desiredCourses = malloc(sizeof(int) * 1);
+    if (hacker->desiredCourses == NULL) {
         return ALLOC_FAILED; //need to free
     }
 
-    sys->hackers[hackersNum]->desiredCourses[0] = 0; // zero for the end of the array
+    hacker->desiredCourses[0] = 0; // zero for the end of the array
 
     //get the first course
     int numOfCourses = 0;
     for(int i = 0; currChar != '\n'; i++){
 
         //if the array is full, need to realloc
-        if (sys->hackers[hackersNum]->desiredCourses[i] == 0)
+        if (hacker->desiredCourses[i] == 0)
         {
             numOfCourses++;
-            temp = realloc(sys->hackers[hackersNum]->desiredCourses,sizeof(int) * (numOfCourses+1));
+            temp = realloc(hacker->desiredCourses,sizeof(int) * (numOfCourses+1));
             if (temp == NULL) {
                 return ALLOC_FAILED;
             }
         }//end of realloc
-        sys->hackers[hackersNum]->desiredCourses = temp;
+        hacker->desiredCourses = temp;
 
-        sys->hackers[hackersNum]->desiredCourses[numOfCourses] = 0;
-        fscanf(hackers, "%d", sys->hackers[hackersNum]->desiredCourses[i]);
+        hacker->desiredCourses[numOfCourses] = 0;
+        fscanf(hackers, "%d", hacker->desiredCourses[i]);
         currChar = fgetc(hackers);
     }
     //currChar is backslash n
 
     //get friends ID
-    sys->hackers[hackersNum]->friendsId = malloc(sizeof(char*) * 1);
-    if (sys->hackers[hackersNum]->friendsId == NULL) {
+    hacker->friendsId = malloc(sizeof(char*) * 1);
+    if (hacker->friendsId == NULL) {
         return ALLOC_FAILED;
     }
-    sys->hackers[hackersNum]->friendsId[0] = NULL; // zero for the end of the array
+    hacker->friendsId[0] = NULL; // zero for the end of the array
 
-    errorResult = initAnIDArray(sys->hackers[hackersNum]->friendsId, hackersNum, hackers);
+    errorResult = initAnIDArray(hacker->friendsId, hackers);
     if (errorResult == ALLOC_FAILED) {
         return ALLOC_FAILED;
     }
-    //need to handle memory leaks
-    //get friends ID
-    currChar = '0';
 
-    sys->hackers[hackersNum]->enemiesId = malloc(sizeof(char*) * 1);
-    if (sys->hackers[hackersNum]->enemiesId == NULL) {
+    //get enemies ID
+    hacker->enemiesId = malloc(sizeof(char*) * 1);
+    if (hacker->enemiesId == NULL) {
         return ALLOC_FAILED;
     }
-    errorResult = initAnIDArray(sys->hackers[hackersNum]->enemiesId, hackersNum, hackers);
+    errorResult = initAnIDArray(hacker->enemiesId, hackers);
     if (errorResult == ALLOC_FAILED) {
         return ALLOC_FAILED;
     }
@@ -453,7 +456,7 @@ EnrollmentError InitHackerParams(EnrollmentSystem sys, int hackersNum, FILE* hac
 }
 
 
-EnrollmentError initAnIDArray(char** arr, int hackersNum, FILE* hackers) {
+EnrollmentError initAnIDArray(char** arr, FILE* hackers) {
     char currChar = '0';
     int elementsNumber = 0;
     char** temp = NULL;
@@ -836,3 +839,4 @@ EnrollmentError destroyEnrollmentSystemArrays(EnrollmentSystem sys){
     free(sys->hackers);
     free(sys);
 }
+

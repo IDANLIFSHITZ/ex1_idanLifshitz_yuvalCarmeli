@@ -11,7 +11,7 @@
 
 enum {STRANGER, FRIEND, ENEMY};
 
-typedef struct Node
+typedef struct Node_t
 {
     void* student;
     int friendNum;
