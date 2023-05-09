@@ -21,14 +21,12 @@ int main(int argc, char** argv)
     {
         return 0;
     }
-
     FILE* coursesFile = fopen(argv[2+flag], "r");
     if (coursesFile == NULL)
     {
         fclose(studentsFile);
         return 0;
     }
-
     FILE* hackersFile = fopen(argv[3+flag], "r");
     if (hackersFile == NULL)
     {
@@ -36,7 +34,6 @@ int main(int argc, char** argv)
         fclose(coursesFile);
         return 0;
     }
-
     FILE* queuesFile = fopen(argv[4+flag], "r");
     if (queuesFile == NULL)
     {
@@ -45,7 +42,6 @@ int main(int argc, char** argv)
         fclose(hackersFile);
         return 0;
     }
-
     FILE* outputFile = fopen(argv[5+flag], "w");
     if (outputFile == NULL)
     {
@@ -55,8 +51,6 @@ int main(int argc, char** argv)
         fclose(queuesFile);
         return 0;
     }
-
-
     EnrollmentSystem system = createEnrollment(studentsFile, coursesFile, hackersFile);
     if (system == NULL) // if createEnrollment failed.
     {
@@ -70,7 +64,6 @@ int main(int argc, char** argv)
 
     updateCapLettersFlag(system, !flag);
     system = readEnrollment(system, queuesFile);
-
     if (system == NULL) // if readEnrollment failed.
     {
         destroyEnrollmentSystem(system);

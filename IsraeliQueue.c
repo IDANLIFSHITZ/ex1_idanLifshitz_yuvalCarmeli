@@ -398,7 +398,6 @@ int checkFriend(IsraeliQueue queue, void* item1, void* item2)
     return STRANGER;
 }
 
-
 FriendshipFunction* createFriendFuncArray(FriendshipFunction* friendFunc)
 {
     int size;
