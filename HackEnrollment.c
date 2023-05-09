@@ -65,7 +65,8 @@ EnrollmentError InitHackerParams(Student hacker, FILE* hackers);
 
 int getHackerPosInStudentArray(EnrollmentSystem sys, char* hackerID);
 
-void addFriendshipFunctions(IsraeliQueue q);
+void addFriendshipFunctions(IsraeliQueue queue);
+
 int getIDFromFile(char studentID[ID_SIZE], FILE* file2Read);
 
 Course getCourse(Course* courses, int numOfCourses, int courseNum);
@@ -85,6 +86,7 @@ EnrollmentError destroyEnrollmentSystemArrays(EnrollmentSystem sys);
 EnrollmentError destroyStringsArray(char** strArr);
 
 
+void removeCapLettersFromNames(Student* students, int studentArraySize);
 
 
 int compFunc(Student student1, Student student2);
@@ -168,7 +170,6 @@ EnrollmentSystem createEnrollment(FILE* students, FILE* courses, FILE* hackers){
     return system;
 
 }
-
 
 EnrollmentError initStudentArrayOfEnrollmentSystem(EnrollmentSystem system, FILE* students){
     if (system == NULL || students == NULL)
@@ -282,7 +283,6 @@ EnrollmentError initStudentArrayOfEnrollmentSystem(EnrollmentSystem system, FILE
     return SUCCESS;
 }
 
-
 EnrollmentError initCoursesArrayOfSystem(EnrollmentSystem system, FILE* courses) {
     if (system == NULL || courses == NULL)
     {
@@ -324,7 +324,6 @@ EnrollmentError initCoursesArrayOfSystem(EnrollmentSystem system, FILE* courses)
     }
     return SUCCESS;
 }
-
 
 EnrollmentError initHackersArrayOfSystem(EnrollmentSystem system, FILE* hackers) {
     int hackerPos, errorResult = 0;
@@ -435,6 +434,10 @@ Course createNewCourse(){
     return newCourse;
 }
 
+/*
+ Create function segment:
+
+ */
 
 EnrollmentError InitHackerParams(Student hacker, FILE* hackers){
     char currChar = '0';
@@ -503,10 +506,12 @@ EnrollmentError initAnIDArray(char** arr, FILE* hackers) {
     char currChar = '0';
     int elementsNumber = 0;
     char** temp = NULL;
-    for (int i = 0; currChar != '\n'; i++) {
+    for (int i = 0; currChar != '\n'; i++)
+    {
 
         //if the array is full, need to reallocate
-        if (arr[i] == NULL) {
+        if (arr[i] == NULL)
+        {
             elementsNumber++;
             temp = realloc(arr, sizeof(int) * (elementsNumber+1));
             if (arr == NULL) {
@@ -554,6 +559,12 @@ EnrollmentSystem readEnrollment(EnrollmentSystem system, FILE* queues)
     {
         return NULL;
     }
+
+    if (system->capLettersFlag)
+    {
+        removeCapLettersFromNames(system->myStudents, system->StudentArraySize);
+    }
+
     while (!isEOF) // while file not ended.
     {
         int currCourseNum = 0, currEnd = SPACE;
@@ -622,6 +633,27 @@ Student getStudent(Student* students, int studentArraySize, char* studentID)
         }
     }
     return NULL;
+}
+
+void removeCapLettersFromNames(Student* students, int studentArraySize)
+{
+    for (int i = 0; i < studentArraySize; i++)
+    {
+        for (int j = 0; j < strlen(students[i]->name); j++)
+        {
+            if (students[i]->name[j] >= 'A' && students[i]->name[j] <= 'Z')
+            {
+                students[i]->name[j] += 'A'-'a';
+            }
+        }
+        for (int j = 0; j < strlen(students[i]->surName); j++)
+        {
+            if (students[i]->surName[j] >= 'A' && students[i]->surName[j] <= 'Z')
+            {
+                students[i]->surName[j] += 'A'-'a';
+            }
+        }
+    }
 }
 
 void addFriendshipFunctions(IsraeliQueue queue)
@@ -718,7 +750,7 @@ int calcNameDiff(char* name1, char* name2)
         int curr = name1[i];
         if (i < strlen(name2))
         {
-            curr += name2[i];
+            curr -= name2[i];
         }
         sum += abs(curr);
     }
