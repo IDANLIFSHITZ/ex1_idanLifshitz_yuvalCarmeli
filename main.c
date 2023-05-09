@@ -2,6 +2,44 @@
 #include "IsraeliQueue.h"
 #include "HackEnrollment.h"
 
+
+// argc is of size 7.
+// argv is ./HackEnrollment <flags> <students> <courses> <hackers> <queues> <target>.
+
+int main(int argc, char** argv)
+{
+    int flag = 0;
+    if (argc == 7)
+    {
+        flag = 1;
+    }
+    FILE* studentsFile = fopen(argv[1+flag], "r");
+    FILE* coursesFile = fopen(argv[2+flag], "r");
+    FILE* hackersFile = fopen(argv[3+flag], "r");
+    FILE* queuesFile = fopen(argv[4+flag], "r");
+    FILE* outputFile = fopen(argv[5+flag], "w");
+
+    EnrollmentSystem system = createEnrollment(studentsFile, coursesFile, hackersFile);
+    readEnrollment(system, queuesFile);
+    hackEnrollment(system, outputFile);
+    return 0;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
 //5 if numbers are equal
 int friendships_function1(void *item1, void *item2) {
     if (*((int *) item1) == *((int *) item2)) {
@@ -76,4 +114,4 @@ int main() {
     int sizeQ1 = IsraeliQueueSize(q1);
 
     return 0;
-}
+}*/
