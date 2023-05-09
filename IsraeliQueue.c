@@ -11,7 +11,7 @@ typedef struct Node_t
     void* student;
     int friendNum;
     int enemyNum;
-    struct Node* next;
+    struct Node_t* next;
 }*Node;
 
 struct IsraeliQueue_t
@@ -25,14 +25,19 @@ struct IsraeliQueue_t
 };
 
 
-int checkFriend(IsraeliQueue q, void* f1, void* f2);
+int checkFriend(IsraeliQueue queue, void* item1, void* item2);
+
 FriendshipFunction* createFriendFuncArray(FriendshipFunction* friendFunc);
+
 int getFriendshipThresholdForMerged(IsraeliQueue* , int);
+
 int getEnemyThresholdForMerged(IsraeliQueue* , int);
 
 bool checkInArr(Node* arr, int size, Node Node2check);
+
 Node createNewNode(void* student, int friendNum, int enemyNum);
-void enqueueNode(IsraeliQueue q, Node node2Add);
+
+void enqueueNode(IsraeliQueue queue, Node node2Add);
 
 
 /**Error clarification:
@@ -68,31 +73,38 @@ IsraeliQueue IsraeliQueueCreate(FriendshipFunction* friendFunc, ComparisonFuncti
 
 /**Returns a new queue with the same elements as the parameter. If the parameter is NULL,
  * NULL is returned.*/
-IsraeliQueue IsraeliQueueClone(IsraeliQueue q) {
-    if (q == NULL) return NULL;
+IsraeliQueue IsraeliQueueClone(IsraeliQueue queue) {
+    if (queue == NULL)
+    {
+        return NULL;
+    }
     IsraeliQueue newQueue = (IsraeliQueue) malloc(sizeof(struct IsraeliQueue_t));
-    if (newQueue == NULL) return NULL;
-
-    newQueue->friendFunc = createFriendFuncArray(q->friendFunc);
+    if (newQueue == NULL)
+    {
+        return NULL;
+    }
+    newQueue->friendFunc = createFriendFuncArray(queue->friendFunc);
     if (newQueue->friendFunc == NULL)
     {
         IsraeliQueueDestroy(newQueue);
         return NULL;
     }
-    newQueue->compFunc = q->compFunc;
-    newQueue->friend_th = q->friend_th;
-    newQueue->enemy_th = q->enemy_th;
+    newQueue->compFunc = queue->compFunc;
+    newQueue->friend_th = queue->friend_th;
+    newQueue->enemy_th = queue->enemy_th;
 
-    newQueue->head = createNewNode(q->head->student, q->head->friendNum, q->head->enemyNum); // create new Head.
+    // create new Head.
+    newQueue->head = createNewNode(queue->head->student, queue->head->friendNum, queue->head->enemyNum);
     if (newQueue->head == NULL)
     {
         IsraeliQueueDestroy(newQueue);
         return NULL;
     }
     Node currNode = newQueue->head;
-    for (Node temp = q->head->next; temp != NULL; temp = temp->next) //for Nodes in queue
+    for (Node tempNode = queue->head->next; tempNode != NULL; tempNode = tempNode->next) //for Nodes in queue
     {
-        Node newNode = createNewNode(temp->student, temp->friendNum, temp->enemyNum); // creates new Node and returns it.
+        // creates new Node and returns it.
+        Node newNode = createNewNode(tempNode->student, tempNode->friendNum, tempNode->enemyNum);
         if (newNode == NULL)
         {
             IsraeliQueueDestroy(newQueue);
@@ -111,16 +123,21 @@ IsraeliQueue IsraeliQueueClone(IsraeliQueue q) {
  *
  * Deallocates all memory allocated by IsraeliQueueCreate for the object pointed to by
  * the parameter.*/
-void IsraeliQueueDestroy(IsraeliQueue q){
-    if (q == NULL) return;
-    Node temp = q->head;
-    while (temp != NULL){
-        Node next = temp->next;
-        free(temp);
-        temp = next;
+void IsraeliQueueDestroy(IsraeliQueue queue)
+{
+    if (queue == NULL)
+    {
+        return;
     }
-    free(q->friendFunc);
-    free(q);
+    Node tempNode = queue->head;
+    while (tempNode != NULL)
+    {
+        Node nextNode = tempNode->next;
+        free(tempNode);
+        tempNode = nextNode;
+    }
+    free(queue->friendFunc);
+    free(queue);
 
 }
 
@@ -129,14 +146,14 @@ void IsraeliQueueDestroy(IsraeliQueue q){
  * @param item: an item to enqueue
  *
  * Places the item in the foremost position accessible to it.*/
-IsraeliQueueError IsraeliQueueEnqueue(IsraeliQueue q, void * item)
+IsraeliQueueError IsraeliQueueEnqueue(IsraeliQueue queue, void * item)
 {
     Node newNode = createNewNode(item, 0, 0); // creates new Node and returns it.
     if (newNode==NULL)
     {
         return ISRAELIQUEUE_ALLOC_FAILED; // if allocation failed.
     }
-    enqueueNode(q, newNode);
+    enqueueNode(queue, newNode);
     return ISRAELIQUEUE_SUCCESS;
 }
 
@@ -145,64 +162,80 @@ IsraeliQueueError IsraeliQueueEnqueue(IsraeliQueue q, void * item)
  * going forward.
  *
  * Makes the IsraeliQueue provided recognize the FriendshipFunction provided.*/
-IsraeliQueueError IsraeliQueueAddFriendshipMeasure(IsraeliQueue q, FriendshipFunction friendFunc2Add)
+IsraeliQueueError IsraeliQueueAddFriendshipMeasure(IsraeliQueue queue, FriendshipFunction friendFunc2Add)
 {
     int size;
-    for (size = 0; q->friendFunc[size] != NULL; size++) {}
+    for (size = 0; queue->friendFunc[size] != NULL; size++) {
+    }
 
-    q->friendFunc = (FriendshipFunction*)realloc(q->friendFunc ,sizeof(FriendshipFunction)*(size+2));
-    if (q->friendFunc == NULL) return ISRAELIQUEUE_ALLOC_FAILED;
+    queue->friendFunc = (FriendshipFunction*)realloc(queue->friendFunc ,sizeof(FriendshipFunction)*(size+2));
+    if (queue->friendFunc == NULL)
+    {
+        return ISRAELIQUEUE_ALLOC_FAILED;
+    }
 
-    q->friendFunc[size] = friendFunc2Add;
-    q->friendFunc[size+1] = NULL;
+    queue->friendFunc[size] = friendFunc2Add;
+    queue->friendFunc[size+1] = NULL;
     return ISRAELIQUEUE_SUCCESS;
 }
 
 
 /**@param IsraeliQueue: an IsraeliQueue whose friendship threshold is to be modified
  * @param friendship_threshold: a new friendship threshold for the IsraeliQueue*/
-IsraeliQueueError IsraeliQueueUpdateFriendshipThreshold(IsraeliQueue q, int FriendshipThreshold)
+IsraeliQueueError IsraeliQueueUpdateFriendshipThreshold(IsraeliQueue queue, int FriendshipThreshold)
 {
-    if (q == NULL) return ISRAELIQUEUE_BAD_PARAM;
-    q->friend_th = FriendshipThreshold;
+    if (queue == NULL)
+    {
+        return ISRAELIQUEUE_BAD_PARAM;
+    }
+    queue->friend_th = FriendshipThreshold;
     return ISRAELIQUEUE_SUCCESS;
 }
 
 /**@param IsraeliQueue: an IsraeliQueue whose rivalry threshold is to be modified
  * @param friendship_threshold: a new rivalry threshold for the IsraeliQueue*/
-IsraeliQueueError IsraeliQueueUpdateRivalryThreshold(IsraeliQueue q, int EnemyThreshold)
+IsraeliQueueError IsraeliQueueUpdateRivalryThreshold(IsraeliQueue queue, int EnemyThreshold)
 {
-    if (q == NULL) return ISRAELIQUEUE_BAD_PARAM;
-    q->enemy_th = EnemyThreshold;
+    if (queue == NULL)
+    {
+        return ISRAELIQUEUE_BAD_PARAM;
+    }
+    queue->enemy_th = EnemyThreshold;
     return ISRAELIQUEUE_SUCCESS;
 }
 
 /**Returns the number of elements of the given queue. If the parameter is NULL, 0
  * is returned.*/
-int IsraeliQueueSize(IsraeliQueue q){
-    if (q == NULL) return 0;
+int IsraeliQueueSize(IsraeliQueue queue)
+{
+    if (queue == NULL)
+    {
+        return 0;
+    }
     int size = 0;
-    Node temp = q->head;
-    while (temp != NULL){
+    Node tempNode = queue->head;
+    while (tempNode != NULL)
+    {
         size++;
-        temp = temp->next;
+        tempNode = tempNode->next;
     }
     return size;
 }
 
 /**Removes and returns the foremost element of the provided queue. If the parameter
  * is NULL or a pointer to an empty queue, NULL is returned.*/
-void* IsraeliQueueDequeue(IsraeliQueue q){
-    if (q == NULL || q->head == NULL)
+void* IsraeliQueueDequeue(IsraeliQueue queue)
+{
+    if (queue == NULL || queue->head == NULL)
     {
         return NULL;
     }
 
-    Node temp = q->head;
-    void* item = temp->student;
+    Node tempNode = queue->head;
+    void* item = tempNode->student;
 
-    q->head = temp->next;
-    free(temp);
+    queue->head = tempNode->next;
+    free(tempNode);
     return item;
 }
 
@@ -210,30 +243,42 @@ void* IsraeliQueueDequeue(IsraeliQueue q){
  *
  * Returns whether the queue contains an element equal to item. If either
  * parameter is NULL, false is returned.*/
-bool IsraeliQueueContains(IsraeliQueue q, void * item)
+bool IsraeliQueueContains(IsraeliQueue queue, void * item)
 {
-    if (q == NULL) return false;
-    Node temp = q->head;
-    while (temp != NULL){
-        if (q->compFunc(temp->student, item) == 0) return true;
-        temp = temp->next;
+    if (queue == NULL)
+    {
+        return false;
+    }
+    Node tempNode = queue->head;
+    while (tempNode != NULL)
+    {
+        if (queue->compFunc(tempNode->student, item) == 0)
+        {
+            return true;
+        }
+        tempNode = tempNode->next;
     }
     return false;
 }
 
 /**Advances each item in the queue to the foremost position accessible to it,
  * from the back of the queue frontwards.*/
-IsraeliQueueError IsraeliQueueImprovePositions(IsraeliQueue q)
+IsraeliQueueError IsraeliQueueImprovePositions(IsraeliQueue queue)
 {
-    if (q == NULL) return ISRAELIQUEUE_BAD_PARAM;
-    int size = IsraeliQueueSize(q);
+    if (queue == NULL)
+    {
+        return ISRAELIQUEUE_BAD_PARAM;
+    }
+    int size = IsraeliQueueSize(queue);
     Node* NodesArr = (Node*)malloc(sizeof(Node)*size);
     if (NodesArr==NULL)
     {
         return ISRAELIQUEUE_ALLOC_FAILED;
     }
-    Node currNode = q->head;
-    for(int i = 0; i < size; i++, currNode = currNode->next) // fills the array with the Nodes in their current positions.
+    Node currNode = queue->head;
+
+    // fills the array with the Nodes in their current positions.
+    for(int i = 0; i < size; i++, currNode = currNode->next)
     {
         NodesArr[i] = currNode;
     }
@@ -241,22 +286,24 @@ IsraeliQueueError IsraeliQueueImprovePositions(IsraeliQueue q)
     for (int i = 0; i < size; i++)
     {
         Node Node2Advance = NodesArr[i];
-        if (Node2Advance == q->head) //if current Node is the head.
+        if (Node2Advance == queue->head) //if current Node is the head.
         {
-            Node temp = q->head;
-            q->head = q->head->next;
-            enqueueNode(q, temp); // re-enqueue the head.
+            Node temp = queue->head;
+            queue->head = queue->head->next;
+            enqueueNode(queue, temp); // re-enqueue the head.
         }
         else
         {
-            for (currNode = q->head; currNode->next != Node2Advance; currNode = currNode->next) {
+            for (currNode = queue->head; currNode->next != Node2Advance; currNode = currNode->next){
             } //finds the Node before the current Node.
 
-            Node temp = currNode->next;
-            currNode->next = temp->next;
-            enqueueNode(q, temp);
+            Node tempNode = currNode->next;
+            currNode->next = tempNode->next;
+            enqueueNode(queue, tempNode);
         }
     }
+
+    free(NodesArr);
     return ISRAELIQUEUE_SUCCESS;
 }
 
@@ -266,25 +313,29 @@ IsraeliQueueError IsraeliQueueImprovePositions(IsraeliQueue q)
  * Merges all queues in q_arr into a single new queue, with parameters the parameters described
  * in the exercise. Each queue in q_arr enqueues its head in the merged queue, then lets the next
  * one enqueue an item, in the order defined by q_arr. In the event of any error during execution, return NULL.*/
-IsraeliQueue IsraeliQueueMerge(IsraeliQueue* q ,ComparisonFunction compFunc) {
+IsraeliQueue IsraeliQueueMerge(IsraeliQueue* queue ,ComparisonFunction compFunc)
+{
     //gets size of array.
-    if (q == NULL)
+    if (queue == NULL)
     {
         return NULL;
     }
+
     int size;
-    for (size = 0; q[size] != NULL; size++)
-    {
+    for (size = 0; queue[size] != NULL; size++){
     }
 
     //creates friendship function array for merged queue.
-    FriendshipFunction *mergedFunctions = createFriendFuncArray(q[0]->friendFunc);
-    if (mergedFunctions == NULL) return NULL;
+    FriendshipFunction *mergedFunctions = createFriendFuncArray(queue[0]->friendFunc);
+    if (mergedFunctions == NULL)
+    {
+        return NULL;
+    }
 
     //creates merged queue.
     IsraeliQueue mergedQueue = IsraeliQueueCreate(mergedFunctions, compFunc,
-                                                  getFriendshipThresholdForMerged(q, size),
-                                                  getEnemyThresholdForMerged(q, size));
+                                                  getFriendshipThresholdForMerged(queue, size),
+                                                  getEnemyThresholdForMerged(queue, size));
     if (mergedQueue == NULL)
     {
         free(mergedFunctions);
@@ -295,58 +346,57 @@ IsraeliQueue IsraeliQueueMerge(IsraeliQueue* q ,ComparisonFunction compFunc) {
     int j = 0;
     for (int i = 1; i < size; i++)
     {
-        while (q[i]->friendFunc[j] != NULL)
+        while (queue[i]->friendFunc[j] != NULL)
         {
-            IsraeliQueueAddFriendshipMeasure(mergedQueue,q[i]->friendFunc[j]);
+            IsraeliQueueAddFriendshipMeasure(mergedQueue,queue[i]->friendFunc[j]);
             j++;
         }
     }
 
     //merge queues.
     bool notEmpty = true;
-    void* temp = NULL;
+    void* tempItem = NULL;
     while(notEmpty)
     {
         notEmpty = false;
         for (int i = 0; i < size; i++)
         {
-            if (q[i]->head != NULL) {
-                temp = IsraeliQueueDequeue(q[i]);
-                IsraeliQueueEnqueue(mergedQueue, temp);
+            if (queue[i]->head != NULL)
+            {
+                tempItem = IsraeliQueueDequeue(queue[i]);
+                IsraeliQueueEnqueue(mergedQueue, tempItem);
                 notEmpty = true;
             }
         }
     }
     return mergedQueue;
-
-
 }
 
-int checkFriend(IsraeliQueue q, void* item1, void* item2)
+int checkFriend(IsraeliQueue queue, void* item1, void* item2)
 {
-    int sum = 0, sumCount = 0, curr;
+    int sum = 0, sumCount = 0, currItem;
     bool flag = false;
-    for (int i = 0; q->friendFunc[i] != NULL; i++) //for friend function in queue.
+    for (int i = 0; queue->friendFunc[i] != NULL; i++) //for friend function in queue.
     {
         flag = true;
-        curr = q->friendFunc[i](item1, item2);
-        if (curr > q->friend_th){
+        currItem = queue->friendFunc[i](item1, item2);
+        if (currItem > queue->friend_th)
+        {
             return FRIEND;
         }
-        sum += curr;
+        sum += currItem;
         sumCount++;
     }
     if(flag == false)
     {
         return STRANGER;
     }
-    if (sum/sumCount < q->enemy_th)
+    if (sum/sumCount < queue->enemy_th)
     {
         return ENEMY;
     }
     return STRANGER;
 }
-
 
 
 FriendshipFunction* createFriendFuncArray(FriendshipFunction* friendFunc)
@@ -368,21 +418,23 @@ FriendshipFunction* createFriendFuncArray(FriendshipFunction* friendFunc)
     return newFriendFunc;
 }
 
-int getFriendshipThresholdForMerged(IsraeliQueue* q, int size){
+int getFriendshipThresholdForMerged(IsraeliQueue* queue, int size){
     int friend_th = 0;
-    for (int i = 0; i < size; i++) {
-        friend_th += q[i]->friend_th;
+    for (int i = 0; i < size; i++)
+    {
+        friend_th += queue[i]->friend_th;
     }
     return friend_th / size;
 }
 
-int getEnemyThresholdForMerged(IsraeliQueue* q, int size){
+int getEnemyThresholdForMerged(IsraeliQueue* queue, int size){
     int enemy_th = 1;
     double root;
-    for (int i = 0; i < size; i++) {
-        enemy_th *= abs(q[i]->friend_th);
+    for (int i = 0; i < size; i++)
+    {
+        enemy_th *= abs(queue[i]->friend_th);
     }
-    root = 1/size;
+    root = 1/((double)size);
     return pow(enemy_th, root);
 }
 
@@ -397,8 +449,11 @@ bool checkInArr(Node* arr, int size, Node Node2check)
 
 Node createNewNode(void* student, int friendNum, int enemyNum)
 {
-    Node newNode = (Node) malloc(sizeof(struct Node_t));
-    if (newNode == NULL) return NULL;
+    Node newNode = (Node)malloc(sizeof(struct Node_t));
+    if (newNode == NULL)
+    {
+        return NULL;
+    }
     newNode->student = student;
     newNode->friendNum = friendNum;
     newNode->enemyNum = enemyNum;
@@ -406,12 +461,12 @@ Node createNewNode(void* student, int friendNum, int enemyNum)
     return newNode;
 }
 
-void enqueueNode(IsraeliQueue q, Node node2Add)
+void enqueueNode(IsraeliQueue queue, Node node2Add)
 {
-    if (q->head == NULL)
+    if (queue->head == NULL)
     {
-        q->head = node2Add;
-        q->tail = node2Add;
+        queue->head = node2Add;
+        queue->tail = node2Add;
     }
     else
     {
@@ -419,13 +474,15 @@ void enqueueNode(IsraeliQueue q, Node node2Add)
         int relation;
         bool firstEnemy = true;
 
-        for (Node currNode = q->head;
+        for (Node currNode = queue->head;
             currNode != NULL; currNode = currNode->next) // for not reached tail of back of queue.
 
         {
-            relation = checkFriend(q, node2Add->student, currNode->student); //gets current node relation to new Node.
+            relation = checkFriend(queue, node2Add->student, currNode->student); //gets current node relation to new Node.
             if (relation == FRIEND && bestFriend == NULL && currNode->friendNum < FRIEND_QUOTA)
+            {
                 bestFriend = currNode; // if friends and closest friend to front of the line.
+            }
             else if (relation == ENEMY && currNode->enemyNum < RIVAL_QUOTA)  // if enemy.
             {
                 if (firstEnemy) //if first enemy in queue.
@@ -441,15 +498,15 @@ void enqueueNode(IsraeliQueue q, Node node2Add)
             bestFriend->friendNum++;
             node2Add->next = bestFriend->next;
             bestFriend->next = node2Add;
-            if (q->tail == bestFriend)
+            if (queue->tail == bestFriend)
             {
-                q->tail = node2Add;
+                queue->tail = node2Add;
             }
         }
         else // else goes to back of the queue
         {
-            q->tail->next = node2Add;
-            q->tail = node2Add;
+            queue->tail->next = node2Add;
+            queue->tail = node2Add;
         }
     }
 }
