@@ -69,13 +69,13 @@ int comparison_function(void *item1, void *item2) {
 
 
 int main() {
-//    FILE *studentsFile = fopen("C:\\Technion\\mtm\\hw1\\ex1_idanLifshitz_yuvalCarmeli\\ExampleTest\\students.txt", "r");
-//    FILE *hackersFile = fopen("C:\\Technion\\mtm\\hw1\\ex1_idanLifshitz_yuvalCarmeli\\ExampleTest\\hackers.txt", "r");
-//    FILE *coursesFile = fopen("C:\\Technion\\mtm\\hw1\\ex1_idanLifshitz_yuvalCarmeli\\ExampleTest\\courses.txt", "r");
-//    FILE *queuesFile = fopen("C:\\Technion\\mtm\\hw1\\ex1_idanLifshitz_yuvalCarmeli\\ExampleTest\\queues.txt", "r");
-//
-//
-//    EnrollmentSystem ee = readEnrollment(createEnrollment(studentsFile, coursesFile, hackersFile), queuesFile);
+    FILE *studentsFile = fopen("C:\\Users\\yuval\\CLionProjects\\ex1_idanLifshitz_yuvalCarmeli\\ExampleTest\\students.txt", "r");
+    FILE *hackersFile = fopen("C:\\Users\\yuval\\CLionProjects\\ex1_idanLifshitz_yuvalCarmeli\\ExampleTest\\hackers.txt", "r");
+    FILE *coursesFile = fopen("C:\\Users\\yuval\\CLionProjects\\ex1_idanLifshitz_yuvalCarmeli\\ExampleTest\\courses.txt", "r");
+    FILE *queuesFile = fopen("C:\\Users\\yuval\\CLionProjects\\ex1_idanLifshitz_yuvalCarmeli\\ExampleTest\\queues.txt", "r");
+
+
+   EnrollmentSystem ee = readEnrollment(createEnrollment(studentsFile, coursesFile, hackersFile), queuesFile);
     FriendshipFunction *funcs = malloc(3 * sizeof(FriendshipFunction));
     *funcs = friendships_function1;
     funcs[1] = friendships_function2;
