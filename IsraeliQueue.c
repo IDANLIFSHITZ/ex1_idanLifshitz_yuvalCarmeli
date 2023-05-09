@@ -47,7 +47,7 @@ void enqueueNode(IsraeliQueue q, Node node2Add);
  * to the new object. In case of failure, return NULL.*/
 IsraeliQueue IsraeliQueueCreate(FriendshipFunction* friendFunc, ComparisonFunction compFunc, int friend_th, int enemy_th)
 {
-    IsraeliQueue newQueue = (IsraeliQueue)malloc(sizeof(newQueue));
+    IsraeliQueue newQueue = (IsraeliQueue)malloc(sizeof(struct IsraeliQueue_t));
     if (newQueue == NULL)
     {
         return NULL;
@@ -70,7 +70,7 @@ IsraeliQueue IsraeliQueueCreate(FriendshipFunction* friendFunc, ComparisonFuncti
  * NULL is returned.*/
 IsraeliQueue IsraeliQueueClone(IsraeliQueue q) {
     if (q == NULL) return NULL;
-    IsraeliQueue newQueue = (IsraeliQueue) malloc(sizeof(IsraeliQueue));
+    IsraeliQueue newQueue = (IsraeliQueue) malloc(sizeof(struct IsraeliQueue_t));
     if (newQueue == NULL) return NULL;
 
     newQueue->friendFunc = createFriendFuncArray(q->friendFunc);
@@ -322,15 +322,26 @@ IsraeliQueue IsraeliQueueMerge(IsraeliQueue* q ,ComparisonFunction compFunc) {
 int checkFriend(IsraeliQueue q, void* item1, void* item2)
 {
     int sum = 0, sumCount = 0, curr;
+    bool flag = false;
     for (int i = 0; q->friendFunc[i] != NULL; i++) //for friend function in queue.
     {
+        flag = true;
         curr = q->friendFunc[i](item1, item2);
-        if (curr > q->friend_th) return FRIEND; // if friend.
+        if (curr > q->friend_th){
+            return FRIEND;
+        }
         sum += curr;
         sumCount++;
     }
-    if (sum/sumCount < q->enemy_th) return ENEMY; //if enemy.
-    return STRANGER; //else stranger.
+    if(flag == false)
+    {
+        return STRANGER;
+    }
+    if (sum/sumCount < q->enemy_th)
+    {
+        return ENEMY;
+    }
+    return STRANGER;
 }
 
 
@@ -383,7 +394,7 @@ bool checkInArr(Node* arr, int size, Node Node2check)
 
 Node createNewNode(void* student, int friendNum, int enemyNum)
 {
-    Node newNode = (Node) malloc(sizeof(Node));
+    Node newNode = (Node) malloc(sizeof(struct Node_t));
     if (newNode == NULL) return NULL;
     newNode->student = student;
     newNode->friendNum = friendNum;
@@ -406,10 +417,10 @@ void enqueueNode(IsraeliQueue q, Node node2Add)
         bool firstEnemy = true;
 
         for (Node currNode = q->head;
-            currNode != q->tail; currNode = currNode->next) // for not reached tail of back of queue.
+            currNode != NULL; currNode = currNode->next) // for not reached tail of back of queue.
 
         {
-            relation = checkFriend(q, node2Add, currNode); //gets current node relation to new Node.
+            relation = checkFriend(q, node2Add->student, currNode->student); //gets current node relation to new Node.
             if (relation == FRIEND && bestFriend == NULL && currNode->friendNum < FRIEND_QUOTA)
                 bestFriend = currNode; // if friends and closest friend to front of the line.
             else if (relation == ENEMY && currNode->enemyNum < RIVAL_QUOTA)  // if enemy.

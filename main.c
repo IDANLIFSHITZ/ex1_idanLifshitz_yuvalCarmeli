@@ -3,7 +3,7 @@
 #include "IsraeliQueue.h"
 #include "HackEnrollment.h"
 
-
+/*
 // argc is of size 7.
 // argv is ./HackEnrollment <flags> <students> <courses> <hackers> <queues> <target>.
 
@@ -35,15 +35,18 @@ int main(int argc, char** argv)
     system = readEnrollment(system, queuesFile);
     if (system == NULL) // if readEnrollment failed.
     {
+        destroySys(system);
         return 0;
     }
 
     hackEnrollment(system, outputFile);
+    destroySys(system);
     return 0;
 }
 
 
 
+*/
 
 
 
@@ -56,7 +59,6 @@ int main(int argc, char** argv)
 
 
 
-/*
 //5 if numbers are equal
 int friendships_function1(void *item1, void *item2) {
     if (*((int *) item1) == *((int *) item2)) {
@@ -85,15 +87,22 @@ int comparison_function(void *item1, void *item2) {
 
 
 
+
 int main() {
     FILE *studentsFile = fopen("C:\\Users\\yuval\\CLionProjects\\ex1_idanLifshitz_yuvalCarmeli\\ExampleTest\\students.txt", "r");
     FILE *hackersFile = fopen("C:\\Users\\yuval\\CLionProjects\\ex1_idanLifshitz_yuvalCarmeli\\ExampleTest\\hackers.txt", "r");
     FILE *coursesFile = fopen("C:\\Users\\yuval\\CLionProjects\\ex1_idanLifshitz_yuvalCarmeli\\ExampleTest\\courses.txt", "r");
     FILE *queuesFile = fopen("C:\\Users\\yuval\\CLionProjects\\ex1_idanLifshitz_yuvalCarmeli\\ExampleTest\\queues.txt", "r");
-
+    FILE *out = fopen("C:\\Users\\yuval\\CLionProjects\\ex1_idanLifshitz_yuvalCarmeli\\ExampleTest\\myOut.txt", "w");
 
    EnrollmentSystem ee = readEnrollment(createEnrollment(studentsFile, coursesFile, hackersFile), queuesFile);
+    hackEnrollment(ee, out);
+
+
+
     FriendshipFunction *funcs = malloc(3 * sizeof(FriendshipFunction));
+
+
     *funcs = friendships_function1;
     funcs[1] = friendships_function2;
     funcs[2] = NULL;
@@ -130,5 +139,12 @@ int main() {
 
     int sizeQ1 = IsraeliQueueSize(q1);
 
+    fclose(studentsFile);
+    fclose(hackersFile);
+    fclose(coursesFile);
+    fclose(queuesFile);
+    fclose(out);
+
+
     return 0;
-}*/
+}

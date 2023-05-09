@@ -52,21 +52,22 @@ typedef struct EnrollmentSystem
     bool capLettersFlag;
 }*EnrollmentSystem;
 
-Student createNewStudent();
-Course createNewCourse();
+
 
 
 EnrollmentError initStudentArrayOfEnrollmentSystem(EnrollmentSystem sys, FILE* students);
 EnrollmentError initCoursesArrayOfSystem(EnrollmentSystem sys, FILE* courses);
 EnrollmentError initHackersArrayOfSystem(EnrollmentSystem sys, FILE* hackers);
 
+Student createNewStudent();
+Course createNewCourse();
 EnrollmentError InitHackerParams(Student hacker, FILE* hackers);
 
 int getHackerPosInStudentArray(EnrollmentSystem sys, char* hackerID);
 
 void addFriendshipFunctions(IsraeliQueue q);
-
 int getIDFromFile(char studentID[ID_SIZE], FILE* file2Read);
+
 Course getCourse(Course* courses, int numOfCourses, int courseNum);
 Student getStudent(Student* students, int studentArraySize, char* currStudentID);
 EnrollmentError initAnIDArray(char** arr, FILE* hackers);
@@ -93,11 +94,11 @@ int friendshipFuncHackerFileHelper(Student student1, Student student2);
 
 int friendshipFuncNameDist(Student student1, Student student2);
 int calcNameDiff(char* name1, char* name2);
-
 int friendshipFuncIDSubtract(Student student1, Student student2);
 
 bool isInCourse(Course course2Check, Student student2Find);
 bool checkSatisfiedHacker(int countSuccessCourses, Student hacker);
+
 void printFailedHacker(FILE* out, Student hacker2Print);
 void printCourses2File(EnrollmentSystem system, FILE* out);
 void printCourse(Course course2Print, FILE* out);
@@ -326,7 +327,8 @@ EnrollmentError initCoursesArrayOfSystem(EnrollmentSystem system, FILE* courses)
 
 
 EnrollmentError initHackersArrayOfSystem(EnrollmentSystem system, FILE* hackers) {
-    int hackersNum, hackerPos, errorResult = 0;
+    int hackerPos, errorResult = 0;
+    int hackersNum = 0;
     char currChar;
     Student hacker = NULL;
     Student* tempStudent = NULL;
@@ -555,7 +557,7 @@ EnrollmentSystem readEnrollment(EnrollmentSystem system, FILE* queues)
     while (!isEOF) // while file not ended.
     {
         int currCourseNum = 0, currEnd = SPACE;
-        fscanf(queues, "%d", &currCourseNum); // get course name.
+        fscanf(queues, "%d ", &currCourseNum); // get course name.
 
         // gets course struct.
         Course currCourse = getCourse(system->courses, system->courseArraySize, currCourseNum);
@@ -571,24 +573,31 @@ EnrollmentSystem readEnrollment(EnrollmentSystem system, FILE* queues)
             Student currStudent = getStudent(system->myStudents, system->StudentArraySize, currStudentID);
             if (currStudent == NULL)
             {
-             // the student does not exist, error.
+             return NULL;
+                // the student does not exist, error.
             }
             IsraeliQueueEnqueue(currCourse->queue, currStudent); // add student to course.
         }
         addFriendshipFunctions(currCourse->queue);
         if (currEnd == NEXT_LINE) // if there is another line in file.
         {
+            char lastChar = fgetc(queues);
+            if (lastChar == EOF) // if file ended.
+            {
+                isEOF = 1;
+            }
+            else // if file not ended.
+            {
+                ungetc(lastChar, queues); // return last char to stream.
+            }
             continue;
-        }
-        else if (currEnd == END_OF_FILE) // if file ended.
-        {
-            isEOF = true;
         }
         else // error in file read.
         {
-            // error handle.
+            return NULL;
         }
     }
+    return system;
 }
 
 Course getCourse(Course* courses, int numOfCourses, int courseNum)
@@ -643,6 +652,7 @@ void hackEnrollment(EnrollmentSystem system, FILE* out)
         }
     }
     printCourses2File(system, out);
+    return;
 }
 
 int friendshipFuncHackerFile(Student student1, Student student2)
@@ -670,7 +680,7 @@ int friendshipFuncHackerFileHelper(Student student1, Student student2)
     }
     for (int i = 0; student1->enemiesId[i] != NULL; i++)
     {
-        if (strcmp(student2->StudentID, student1->friendsId[i]) == 0) // if s2 is enemy.
+        if (strcmp(student2->StudentID, student1->enemiesId[i]) == 0) // if s2 is enemy.
         {
             return ENEMY;
         }
@@ -766,12 +776,13 @@ bool isInCourse(Course course2Check, Student student2Find)
     for (int count = 0; count < IsraeliQueueSize(clonedQueue); count++) // for Nodes in queue.
     {
         Student currStudent = IsraeliQueueDequeue(clonedQueue);
-        count++;
         if (compFunc(currStudent, student2Find) && count < course2Check->size)
         {
+            IsraeliQueueDestroy(clonedQueue);
             return true;
         }
     }
+    IsraeliQueueDestroy(clonedQueue);
     return false;
 }
 
@@ -791,17 +802,17 @@ bool checkSatisfiedHacker(int countSuccessCourses, Student hacker)
 
 void printFailedHacker(FILE* out, Student hacker2Print)
 {
-    char message2Print[100] = "Cannot satisfy constraints for";
-    strcpy(message2Print, hacker2Print->StudentID);
-    fprintf(out, "%s", message2Print);
+    char message2Print[100] = "Cannot satisfy constraints for ";
+    strcat(message2Print, hacker2Print->StudentID);
+    fprintf(out, message2Print);
     return;
 }
 
 void printCourses2File(EnrollmentSystem sys, FILE* out)
 {
-    for (int i = 0; sys->courses[i] != NULL; i++)
+    for (int i = 0; i < sys->courseArraySize; i++)
     {
-        if (sys->courses[i]->size != 0)
+        if (IsraeliQueueSize(sys->courses[i]->queue) != 0)
         {
             printCourse(sys->courses[i], out);
         }
@@ -815,7 +826,7 @@ void printCourse(Course course2Print , FILE* out)
     fprintf(out, "%d", course2Print->courseNumber);
     IsraeliQueue clonedQueue = IsraeliQueueClone(course2Print->queue);
     Student currStudent = IsraeliQueueDequeue(clonedQueue);
-    for (currStudent; currStudent != NULL; currStudent = IsraeliQueueDequeue(clonedQueue))
+    for (; currStudent != NULL; currStudent = IsraeliQueueDequeue(clonedQueue))
     {
         fprintf(out, " ");
         fprintf(out, "%s", currStudent->StudentID);
