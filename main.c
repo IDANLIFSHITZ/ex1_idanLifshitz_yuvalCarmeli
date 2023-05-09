@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <string.h>
 #include "IsraeliQueue.h"
 #include "HackEnrollment.h"
 
@@ -9,7 +10,7 @@
 int main(int argc, char** argv)
 {
     int flag = 0;
-    if (argc == 7)
+    if (argc == 7 && strcmp(argv[1], "-i"))
     {
         flag = 1;
     }
@@ -18,9 +19,25 @@ int main(int argc, char** argv)
     FILE* hackersFile = fopen(argv[3+flag], "r");
     FILE* queuesFile = fopen(argv[4+flag], "r");
     FILE* outputFile = fopen(argv[5+flag], "w");
+    // if one of the files is NULL (didn't open right).
+    if (studentsFile == NULL || coursesFile == NULL || hackersFile == NULL || queuesFile == NULL || outputFile == NULL)
+    {
+        return 0;
+    }
 
     EnrollmentSystem system = createEnrollment(studentsFile, coursesFile, hackersFile);
-    readEnrollment(system, queuesFile);
+    if (system == NULL) // if createEnrollment failed.
+    {
+        return 0;
+    }
+
+    updateCapLettersFlag(system, !flag);
+    system = readEnrollment(system, queuesFile);
+    if (system == NULL) // if readEnrollment failed.
+    {
+        return 0;
+    }
+
     hackEnrollment(system, outputFile);
     return 0;
 }
