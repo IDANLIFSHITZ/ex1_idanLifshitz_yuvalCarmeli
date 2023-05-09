@@ -67,11 +67,21 @@ int main(int argc, char** argv)
     if (system == NULL) // if readEnrollment failed.
     {
         destroyEnrollmentSystem(system);
+        fclose(studentsFile);
+        fclose(coursesFile);
+        fclose(hackersFile);
+        fclose(queuesFile);
+        fclose(outputFile);
         return 0;
     }
 
     hackEnrollment(system, outputFile);
     destroyEnrollmentSystem(system);
+    fclose(studentsFile);
+    fclose(coursesFile);
+    fclose(hackersFile);
+    fclose(queuesFile);
+    fclose(outputFile);
     return 0;
 }
 
