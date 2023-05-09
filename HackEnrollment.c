@@ -98,7 +98,7 @@ int friendshipFuncNameDist(Student student1, Student student2);
 int calcNameDiff(char* name1, char* name2);
 int friendshipFuncIDSubtract(Student student1, Student student2);
 
-bool isInCourse(Course course2Check, Student student2Find);
+int isInCourse(Course course2Check, Student student2Find);
 bool checkSatisfiedHacker(int countSuccessCourses, Student hacker);
 
 void printFailedHacker(FILE* out, Student hacker2Print);
@@ -643,14 +643,14 @@ void removeCapLettersFromNames(Student* students, int studentArraySize)
         {
             if (students[i]->name[j] >= 'A' && students[i]->name[j] <= 'Z')
             {
-                students[i]->name[j] += 'A'-'a';
+                students[i]->name[j] -= 'A'-'a';
             }
         }
         for (int j = 0; j < strlen(students[i]->surName); j++)
         {
             if (students[i]->surName[j] >= 'A' && students[i]->surName[j] <= 'Z')
             {
-                students[i]->surName[j] += 'A'-'a';
+                students[i]->surName[j] -= 'A'-'a';
             }
         }
     }
@@ -663,18 +663,29 @@ void addFriendshipFunctions(IsraeliQueue queue)
     IsraeliQueueAddFriendshipMeasure(queue, (int (*)(void*, void*))friendshipFuncIDSubtract);
 }
 
+
 void hackEnrollment(EnrollmentSystem system, FILE* out)
 {
+    int result = 0;
     for (int i = 0; i < system->hackersArraySize; i++)
     {
         int countSuccessCourses = 0;
         for (int j = 0; system->hackers[i]->desiredCourses[j] != NULL; j++)
         {
             Course currCourse = getCourse(system->courses, system->courseArraySize, system->hackers[i]->desiredCourses[j]);
-            IsraeliQueueEnqueue(currCourse->queue, system->hackers[i]);
-            if (isInCourse(currCourse, system->hackers[i])) // returns true if hacker in course.
+            result = IsraeliQueueEnqueue(currCourse->queue, system->hackers[i]);
+            if(result != ISRAELIQUEUE_SUCCESS)
+            {
+                return;
+            }
+            result = isInCourse(currCourse, system->hackers[i]);
+            if (result == 1) // returns true if hacker in course.
             {
                 countSuccessCourses++;
+            }
+            else if (result == -1) // The cloneQueue allocation failed.
+            {
+                return;
             }
         }
         if (!checkSatisfiedHacker(countSuccessCourses, system->hackers[i]))
@@ -802,9 +813,13 @@ int getIDFromFile(char studentID[ID_SIZE], FILE* file2Read)
     }
 }
 
-bool isInCourse(Course course2Check, Student student2Find)
+int isInCourse(Course course2Check, Student student2Find)
 {
     IsraeliQueue clonedQueue = IsraeliQueueClone(course2Check->queue);
+    if (clonedQueue == NULL)
+    {
+        return -1;
+    }
     for (int count = 0; count < IsraeliQueueSize(clonedQueue); count++) // for Nodes in queue.
     {
         Student currStudent = IsraeliQueueDequeue(clonedQueue);
@@ -857,6 +872,10 @@ void printCourse(Course course2Print , FILE* out)
 {
     fprintf(out, "%d", course2Print->courseNumber);
     IsraeliQueue clonedQueue = IsraeliQueueClone(course2Print->queue);
+    if (clonedQueue == NULL)
+    {
+        return;
+    }
     Student currStudent = IsraeliQueueDequeue(clonedQueue);
     for (; currStudent != NULL; currStudent = IsraeliQueueDequeue(clonedQueue))
     {
@@ -875,6 +894,7 @@ EnrollmentError destroyStudentArrayContent(Student* arr, int size)
         destroyStudent(arr[i]);
     }
     free(arr);
+    return SUCCESS;
 }
 
 EnrollmentError destroyStudent(Student student){
@@ -890,6 +910,7 @@ EnrollmentError destroyStudent(Student student){
         destroyStringsArray(student->enemiesId);
     }
     free(student);
+    return SUCCESS;
 }
 
 EnrollmentError destroyCourseArrayContent(Course* arr, int size)
@@ -898,13 +919,14 @@ EnrollmentError destroyCourseArrayContent(Course* arr, int size)
     {
         destroyCourse(arr[i]);
     }
-
+    return SUCCESS;
 }
 
 EnrollmentError destroyCourse(Course course)
 {
     IsraeliQueueDestroy(course->queue);
     free(course);
+    return SUCCESS;
 }
 
 EnrollmentError destroyStringsArray(char** arr)
@@ -919,12 +941,14 @@ EnrollmentError destroyStringsArray(char** arr)
         free(arr[i]);
     }
     free(arr);
+    return SUCCESS;
 }
 
 EnrollmentError destroyEnrollmentSystemArraysContent(EnrollmentSystem system)
 {
     destroyStudentArrayContent(system->myStudents, system->StudentArraySize);
     destroyCourseArrayContent(system->courses, system->courseArraySize);
+    return SUCCESS;
 }
 
 EnrollmentError destroyEnrollmentSystemArrays(EnrollmentSystem system)
@@ -933,7 +957,15 @@ EnrollmentError destroyEnrollmentSystemArrays(EnrollmentSystem system)
     free(system->courses);
     free(system->hackers);
     free(system);
+    return SUCCESS;
 }
+EnrollmentError destroyEnrollmentSystem(EnrollmentSystem system)
+{
+    destroyEnrollmentSystemArraysContent(system);
+    destroyEnrollmentSystemArrays(system);
+    return SUCCESS;
+}
+
 
 void updateCapLettersFlag(EnrollmentSystem system, bool flag)
 {

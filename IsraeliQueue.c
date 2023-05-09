@@ -193,7 +193,10 @@ int IsraeliQueueSize(IsraeliQueue q){
 /**Removes and returns the foremost element of the provided queue. If the parameter
  * is NULL or a pointer to an empty queue, NULL is returned.*/
 void* IsraeliQueueDequeue(IsraeliQueue q){
-    if (q == NULL || q->head == NULL) return NULL;
+    if (q == NULL || q->head == NULL)
+    {
+        return NULL;
+    }
 
     Node temp = q->head;
     void* item = temp->student;

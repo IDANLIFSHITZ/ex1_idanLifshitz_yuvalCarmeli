@@ -21,9 +21,16 @@ typedef enum { SUCCESS, ALLOC_FAILED, BAD_PARAM, ERROR} EnrollmentError;
 typedef struct EnrollmentSystem * EnrollmentSystem;
 
 EnrollmentSystem createEnrollment(FILE* students, FILE* courses, FILE* hackers);
+
+
 void updateCapLettersFlag(EnrollmentSystem system, bool flag);
+
 EnrollmentSystem readEnrollment(EnrollmentSystem sys, FILE* queues);
+
 void hackEnrollment(EnrollmentSystem sys, FILE* out);
+
+
+EnrollmentError destroyEnrollmentSystem(EnrollmentSystem system);
 
 
 
