@@ -28,7 +28,7 @@ EnrollmentError initHackersArrayOfSystem(EnrollmentSystem system, FILE* hackers)
 Student createNewStudent();
 Course createNewCourse();
 EnrollmentError InitHackerParams(Student hacker, FILE* hackers);
-EnrollmentError initAnIDArray(char** IDArray, FILE* hackers);
+EnrollmentError initAnIDArray(char*** IDArrayPtr, FILE* hackers);
 int getHackerPosInStudentArray(EnrollmentSystem system, char* hackerID);
 EnrollmentError getNameFromFile(char* name, FILE* file2Read);
 
@@ -434,7 +434,8 @@ EnrollmentError InitHackerParams(Student hacker, FILE* hackers)
         {
             numOfCourses++;
             tempDesiredCoursesPtr = realloc(hacker->desiredCourses,sizeof(int) * (numOfCourses+1));
-            if (tempDesiredCoursesPtr == NULL) {
+            if (tempDesiredCoursesPtr == NULL)
+            {
                 return ALLOC_FAILED;
             }
             hacker->desiredCourses = tempDesiredCoursesPtr;
@@ -449,7 +450,8 @@ EnrollmentError InitHackerParams(Student hacker, FILE* hackers)
 
     //get friends ID
     hacker->friendsId = malloc(sizeof(char*) * 1);
-    if (hacker->friendsId == NULL) {
+    if (hacker->friendsId == NULL)
+    {
         return ALLOC_FAILED;
     }
 
@@ -460,7 +462,7 @@ EnrollmentError InitHackerParams(Student hacker, FILE* hackers)
     if (currChar != '\n')
     {
         ungetc(currChar, hackers);
-        errorResult = initAnIDArray(hacker->friendsId, hackers);
+        errorResult = initAnIDArray(&(hacker->friendsId), hackers);
         if (errorResult == ALLOC_FAILED)
         {
             return ALLOC_FAILED;
@@ -474,14 +476,14 @@ EnrollmentError InitHackerParams(Student hacker, FILE* hackers)
         return ALLOC_FAILED;
     }
 
-    hacker->enemiesId[0] = NULL; // zero for the end of the array
+    hacker->enemiesId[0] = NULL; // NULL for the end of the array
 
     //check if empty line
     currChar = fgetc(hackers);
     if (currChar != '\n')
     {
         ungetc(currChar, hackers);
-        errorResult = initAnIDArray(hacker->enemiesId, hackers);
+        errorResult = initAnIDArray(&(hacker->enemiesId), hackers);
         if (errorResult == ALLOC_FAILED)
         {
             return ALLOC_FAILED;
@@ -492,35 +494,36 @@ EnrollmentError InitHackerParams(Student hacker, FILE* hackers)
     return SUCCESS;
 }
 
-EnrollmentError initAnIDArray(char** arr, FILE* hackers)
+EnrollmentError initAnIDArray(char*** IDArrayPtr, FILE* hackers)
 {
     char currChar = '0';
     int elementsNumber = 0;
-    char** temp = NULL;
+    char** tempIDArray = NULL;
     for (int i = 0; currChar != '\n'; i++)
     {
 
         //if the array is full, need to reallocate
-        if (arr[i] == NULL)
+        if ((*IDArrayPtr)[i] == NULL)
         {
             elementsNumber++;
-            temp = realloc(arr, sizeof(char*) * (elementsNumber+1));
-            if (arr == NULL) {
+            tempIDArray = realloc((*IDArrayPtr), sizeof(char*) * (elementsNumber+1));
+            if (tempIDArray == NULL)
+            {
                 return ALLOC_FAILED;
             }
-            arr = temp;
+            (*IDArrayPtr) = tempIDArray;
         }//end of reallocate
 
 
-        arr[i] = malloc(sizeof(char) * ID_SIZE);
-        if (arr[i] == NULL)
+        (*IDArrayPtr)[i] = (char*)malloc(ID_SIZE);
+        if ((*IDArrayPtr)[i] == NULL)
         {
             return ALLOC_FAILED;
         }
 
-        arr[elementsNumber] = NULL;
-        getIDFromFile(arr[i], hackers);
+        getIDFromFile((*IDArrayPtr)[i], hackers);
         currChar = fgetc(hackers);
+        (*IDArrayPtr)[elementsNumber] = NULL;
     }
     return SUCCESS;
 }
@@ -710,7 +713,7 @@ void hackEnrollment(EnrollmentSystem system, FILE* out)
     for (int i = 0; i < system->hackersArraySize; i++)
     {
         int countSuccessCourses = 0;
-        for (int j = 0; system->hackers[i]->desiredCourses[j] != NULL; j++)
+        for (int j = 0; system->hackers[i]->desiredCourses[j] != 0; j++)
         {
             Course currCourse = getCourse(system->courses, system->courseArraySize, system->hackers[i]->desiredCourses[j]);
             result = IsraeliQueueEnqueue(currCourse->queue, system->hackers[i]);
@@ -947,7 +950,7 @@ int getIDFromFile(char studentID[ID_SIZE], FILE* file2Read)
     }
     studentID[ID_SIZE-1] = 0;
     char lastChar = fgetc(file2Read);
-    fseek(file2Read, -1L, SEEK_CUR); // move backwards one character if file stream.
+    ungetc(lastChar, file2Read); // move backwards one character if file stream.
     if (lastChar == ' ')
     {
         return SPACE;
