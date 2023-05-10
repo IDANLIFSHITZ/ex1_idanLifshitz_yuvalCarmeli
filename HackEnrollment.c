@@ -96,7 +96,6 @@ EnrollmentError destroyEnrollmentSystemArrays(EnrollmentSystem system);
  * EnrollmentError getNameFromFile(char* name, FILE* file2Read)
  */
 
-
 EnrollmentSystem createEnrollment(FILE* students, FILE* courses, FILE* hackers)
 {
     if(students == NULL || courses == NULL || hackers == NULL)
@@ -301,7 +300,7 @@ EnrollmentError initHackersArrayOfSystem(EnrollmentSystem system, FILE* hackers)
         if (hackersNum == system->hackersArraySize)
         {
             system->hackersArraySize++;
-            tempStudentArray = realloc(system->hackers, sizeof(struct Student_t) * system->hackersArraySize);
+            tempStudentArray = realloc(system->hackers, sizeof(Student) * system->hackersArraySize);
             if (tempStudentArray == NULL)
             {
                 system->hackersArraySize--;
@@ -408,6 +407,7 @@ EnrollmentError InitHackerParams(Student hacker, FILE* hackers)
     char currChar;
     int* tempDesiredCoursesPtr = NULL;
     int errorResult, numOfCourses = 0;;
+
     //allocate desired courses array
     hacker->desiredCourses = malloc(sizeof(int) * 1);
     if (hacker->desiredCourses == NULL)
@@ -459,16 +459,17 @@ EnrollmentError InitHackerParams(Student hacker, FILE* hackers)
     if (currChar != '\n')
     {
         ungetc(currChar, hackers);
-    }
-
-    errorResult = initAnIDArray(hacker->friendsId, hackers);
-    if (errorResult == ALLOC_FAILED) {
-        return ALLOC_FAILED;
+        errorResult = initAnIDArray(hacker->friendsId, hackers);
+        if (errorResult == ALLOC_FAILED)
+        {
+            return ALLOC_FAILED;
+        }
     }
 
     //get enemies ID
     hacker->enemiesId = malloc(sizeof(char*) * 1);
-    if (hacker->enemiesId == NULL) {
+    if (hacker->enemiesId == NULL)
+    {
         return ALLOC_FAILED;
     }
 
@@ -479,12 +480,14 @@ EnrollmentError InitHackerParams(Student hacker, FILE* hackers)
     if (currChar != '\n')
     {
         ungetc(currChar, hackers);
+        errorResult = initAnIDArray(hacker->enemiesId, hackers);
+        if (errorResult == ALLOC_FAILED)
+        {
+            return ALLOC_FAILED;
+        }
     }
 
-    errorResult = initAnIDArray(hacker->enemiesId, hackers);
-    if (errorResult == ALLOC_FAILED) {
-        return ALLOC_FAILED;
-    }
+
     return SUCCESS;
 }
 
@@ -740,7 +743,9 @@ int isInCourse(Course course2Check, Student student2Find)
     {
         return -1;
     }
-    for (int count = 0; count < IsraeliQueueSize(clonedQueue); count++) // for Nodes in queue.
+
+    int queueSize = IsraeliQueueSize(clonedQueue);
+    for (int count = 0; count < queueSize; count++) // for Nodes in queue.
     {
         Student currStudent = IsraeliQueueDequeue(clonedQueue);
         if (compFunc(currStudent, student2Find) && count < course2Check->size)
@@ -800,11 +805,12 @@ void printCourse(Course course2Print , FILE* out)
     for (; currStudent != NULL; currStudent = IsraeliQueueDequeue(clonedQueue))
     {
         fprintf(out, " ");
-        fprintf(out, "%s", currStudent->StudentID);
+        fprintf(out, currStudent->StudentID);
     }
 
     fprintf(out, "\n");
 }
+
 /*
  * friendship functions segment:
  * int friendshipFuncHackerFile(Student student1, Student student2):
@@ -959,15 +965,12 @@ int getIDFromFile(char studentID[ID_SIZE], FILE* file2Read)
     }
 }
 
-
-
 EnrollmentError destroyStudentArrayContent(Student* studentArray, int size)
 {
     for (int i = 0; i < size; i++)
     {
         destroyStudent(studentArray[i]);
     }
-    free(studentArray);
     return SUCCESS;
 }
 
