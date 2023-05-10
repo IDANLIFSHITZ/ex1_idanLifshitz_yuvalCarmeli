@@ -169,12 +169,13 @@ IsraeliQueueError IsraeliQueueAddFriendshipMeasure(IsraeliQueue queue, Friendshi
     for (size = 0; queue->friendFunc[size] != NULL; size++) {
     }
 
-    FriendshipFunction* temp = (FriendshipFunction*)realloc(queue->friendFunc ,sizeof(FriendshipFunction)*(size+2));
-    if (temp == NULL)
+    FriendshipFunction* tempFuncArray = (FriendshipFunction*)realloc(queue->friendFunc ,sizeof(FriendshipFunction)*(size+2));
+    if (tempFuncArray == NULL)
     {
+        IsraeliQueueDestroy(queue);
         return ISRAELIQUEUE_ALLOC_FAILED;
     }
-    queue->friendFunc = temp;
+    queue->friendFunc = tempFuncArray;
 
     queue->friendFunc[size] = friendFunc2Add;
     queue->friendFunc[size+1] = NULL;
@@ -409,12 +410,14 @@ FriendshipFunction* createFriendFuncArray(FriendshipFunction* friendFunc)
     FriendshipFunction* newFriendFunc = (FriendshipFunction*)malloc(sizeof(FriendshipFunction)*(size+1));
     if (newFriendFunc==NULL)
     {
+        free(friendFunc);
         return NULL;
     }
     for (int i = 0; i < size; i++)
     {
         newFriendFunc[i] = friendFunc[i];
     }
+    free(friendFunc);
     newFriendFunc[size] = NULL;
     return newFriendFunc;
 }

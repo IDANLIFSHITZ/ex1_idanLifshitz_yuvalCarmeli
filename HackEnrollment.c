@@ -37,7 +37,7 @@ EnrollmentError getNameFromFile(char** name, FILE* file2Read);
 Course getCourse(Course* courses, int numOfCourses, int courseNum);
 Student getStudent(Student* students, int studentArraySize, char* currStudentID);
 void removeCapLettersFromNames(Student* students, int studentArraySize);
-void addFriendshipFunctions(IsraeliQueue queue);
+EnrollmentError addFriendshipFunctions(IsraeliQueue queue);
 
 /*
  * hackEnrollment functions:
@@ -626,7 +626,7 @@ EnrollmentSystem readEnrollment(EnrollmentSystem system, FILE* queues)
         Course currCourse = getCourse(system->courses, system->courseArraySize, currCourseNum);
         if (currCourse == NULL)
         {
-            // the course does not exist, error.
+            return NULL;
         }
         char currStudentID[ID_SIZE] = "";
         while (currEnd == SPACE) // while in current word.
@@ -636,12 +636,17 @@ EnrollmentSystem readEnrollment(EnrollmentSystem system, FILE* queues)
             Student currStudent = getStudent(system->myStudents, system->StudentArraySize, currStudentID);
             if (currStudent == NULL)
             {
-             return NULL;
-                // the student does not exist, error.
+                return NULL;
             }
             IsraeliQueueEnqueue(currCourse->queue, currStudent); // add student to course.
         }
-        addFriendshipFunctions(currCourse->queue);
+        int result = addFriendshipFunctions(currCourse->queue);
+        {
+            if (result == ALLOC_FAILED)
+            {
+                return NULL;
+            }
+        }
         if (currEnd == NEXT_LINE) // if there is another line in file.
         {
             char lastChar = fgetc(queues);
@@ -708,11 +713,24 @@ void removeCapLettersFromNames(Student* students, int studentArraySize)
     }
 }
 
-void addFriendshipFunctions(IsraeliQueue queue)
+EnrollmentError addFriendshipFunctions(IsraeliQueue queue)
 {
-    IsraeliQueueAddFriendshipMeasure(queue, (int (*)(void*, void*))friendshipFuncHackerFile);
-    IsraeliQueueAddFriendshipMeasure(queue, (int (*)(void*, void*))friendshipFuncNameDist);
-    IsraeliQueueAddFriendshipMeasure(queue, (int (*)(void*, void*))friendshipFuncIDSubtract);
+
+    if (IsraeliQueueAddFriendshipMeasure(queue, (int (*)(void*, void*))friendshipFuncHackerFile)
+        == ISRAELIQUEUE_ALLOC_FAILED)
+    {
+        return ALLOC_FAILED;
+    }
+    if (IsraeliQueueAddFriendshipMeasure(queue, (int (*)(void*, void*))friendshipFuncNameDist)
+        == ISRAELIQUEUE_ALLOC_FAILED)
+    {
+        return ALLOC_FAILED;
+    }
+    if (IsraeliQueueAddFriendshipMeasure(queue, (int (*)(void*, void*))friendshipFuncIDSubtract)
+        == ISRAELIQUEUE_ALLOC_FAILED)
+    {
+        return ALLOC_FAILED;
+    }
 }
 
 /*
