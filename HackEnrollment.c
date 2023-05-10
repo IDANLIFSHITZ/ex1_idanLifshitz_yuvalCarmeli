@@ -30,7 +30,7 @@ Course createNewCourse();
 EnrollmentError InitHackerParams(Student hacker, FILE* hackers);
 EnrollmentError initAnIDArray(char*** IDArrayPtr, FILE* hackers);
 int getHackerPosInStudentArray(EnrollmentSystem system, char* hackerID);
-EnrollmentError getNameFromFile(char* name, FILE* file2Read);
+EnrollmentError getNameFromFile(char** name, FILE* file2Read);
 
 /*
  * readEnrollment functions:
@@ -212,7 +212,7 @@ EnrollmentError initStudentArrayOfEnrollmentSystem(EnrollmentSystem system, FILE
         fscanf(students, " %d %lf ", &discardInt, &discardDouble);
 
         //get the name
-        result = getNameFromFile(newStudent->name, students);
+        result = getNameFromFile(&newStudent->name, students);
         if (result == ALLOC_FAILED)
         {
             destroyStudentArrayContent(system->myStudents, system->StudentArraySize-1);
@@ -223,7 +223,7 @@ EnrollmentError initStudentArrayOfEnrollmentSystem(EnrollmentSystem system, FILE
         }
 
         //get surname
-        result = getNameFromFile(newStudent->surName, students);
+        result = getNameFromFile(&newStudent->surName, students);
         if (result == ALLOC_FAILED){
             destroyStudentArrayContent(system->myStudents, system->StudentArraySize-1);
             destroyStudent(newStudent);
@@ -540,7 +540,7 @@ int getHackerPosInStudentArray(EnrollmentSystem sys, char* hackerID)
     return -1;
 }
 
-EnrollmentError getNameFromFile(char* name, FILE* file2Read)
+EnrollmentError getNameFromFile(char** name, FILE* file2Read)
 {
     int nameLength = 0;
     int namesSize = NAME_START_SIZE;
@@ -551,20 +551,20 @@ EnrollmentError getNameFromFile(char* name, FILE* file2Read)
         if(nameLength == namesSize-1)
         {
             namesSize *= 2;
-            tempName = realloc(name, sizeof(char) * namesSize);
+            tempName = realloc(*name, sizeof(char) * namesSize);
             if(tempName == NULL)
             {
                 return ALLOC_FAILED;
             }
-            name = tempName;
+            *name = tempName;
         }
 
 
-        name[i] = currChar;
+        (*name)[i] = currChar;
         nameLength++;
         currChar = (char)fgetc(file2Read);
     }
-    name[nameLength] = '\0'; //null terminate the name
+    (*name)[nameLength] = '\0'; //null terminate the name
     return SUCCESS;
 }
 
