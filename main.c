@@ -80,8 +80,8 @@ int main(int argc, char** argv)
     updateCapLettersFlag(system, flag);
 
     // Gets updated system with filled queues according to queues file.
-    system = readEnrollment(system, queuesFile);
-    if (system == NULL) // if readEnrollment failed.
+    EnrollmentSystem tempSystem = readEnrollment(system, queuesFile);
+    if (tempSystem == NULL) // if readEnrollment failed.
     {
         destroyEnrollmentSystem(system);
         fclose(studentsFile);
@@ -91,6 +91,7 @@ int main(int argc, char** argv)
         fclose(outputFile);
         return 0;
     }
+    system = tempSystem;
 
     // Enqueues Hackers to desired courses and writes output to output file.
     hackEnrollment(system, outputFile);
