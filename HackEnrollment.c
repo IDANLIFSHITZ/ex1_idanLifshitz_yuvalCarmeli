@@ -831,6 +831,7 @@ void printCourses2File(EnrollmentSystem system, FILE* out)
             printCourse(system->courses[i], out);
         }
     }
+    ungetc('\n', out);
 }
 
 void printCourse(Course course2Print , FILE* out)
@@ -847,7 +848,7 @@ void printCourse(Course course2Print , FILE* out)
         fprintf(out, " ");
         fprintf(out, currStudent->StudentID);
     }
-
+    IsraeliQueueDestroy(clonedQueue);
     fprintf(out, "\n");
 }
 
