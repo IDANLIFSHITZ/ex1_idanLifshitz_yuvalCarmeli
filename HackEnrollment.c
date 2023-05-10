@@ -407,7 +407,7 @@ EnrollmentError InitHackerParams(Student hacker, FILE* hackers)
 {
     char currChar;
     int* tempDesiredCoursesPtr = NULL;
-    int errorResult, numOfCourses = 0;;
+    int errorResult, numOfCourses = 0;
 
     //allocate desired courses array
     hacker->desiredCourses = malloc(sizeof(int) * 1);
@@ -764,8 +764,8 @@ int isInCourse(Course course2Check, Student student2Find)
 
 bool checkSatisfiedHacker(int countSuccessCourses, Student hacker)
 {
-    if (countSuccessCourses == COURSE_SUCCESS_TH - 1 && hacker->desiredCourses[0] != NULL
-        && hacker->desiredCourses[1] == NULL)
+    if (countSuccessCourses == COURSE_SUCCESS_TH - 1 && hacker->desiredCourses[0] != 0
+        && hacker->desiredCourses[1] == 0)
     {
         return true;
     }
@@ -995,11 +995,11 @@ EnrollmentError destroyStudent(Student student)
     return SUCCESS;
 }
 
-EnrollmentError destroyCourseArrayContent(Course* coursesArray, int size)
+EnrollmentError destroyCourseArrayContent(Course* courseArray, int size)
 {
     for (int i = 0; i < size; i++)
     {
-        destroyCourse(coursesArray[i]);
+        destroyCourse(courseArray[i]);
     }
     return SUCCESS;
 }
