@@ -22,15 +22,15 @@ enum {SPACE, NEXT_LINE, END_OF_FILE};
  * createEnrollment functions:
  */
 
-
-EnrollmentError initStudentArrayOfEnrollmentSystem(EnrollmentSystem system, FILE* students);
-EnrollmentError initCoursesArrayOfSystem(EnrollmentSystem system, FILE* courses);
-EnrollmentError initHackersArrayOfSystem(EnrollmentSystem system, FILE* hackers);
+EnrollmentSystem constructEnrollmentSystem(EnrollmentSystem system);
+EnrollmentError createStudentArrayOfEnrollmentSystem(EnrollmentSystem system, FILE* students);
+EnrollmentError createCoursesArrayOfSystem(EnrollmentSystem system, FILE* courses);
+EnrollmentError createHackersArrayOfSystem(EnrollmentSystem system, FILE* hackers);
 Student createNewStudent();
 Course createNewCourse();
 EnrollmentError updateHackerParams(Student hacker, FILE* hackers);
-EnrollmentError initAnIDArray(char*** IDArrayPtr, FILE* hackers);
-int getHackerPosInStudentArray(EnrollmentSystem system, char* hackerID);
+EnrollmentError createAnIDArray(char*** IDArrayPtr, FILE* hackers);
+int getHackerPositionInStudentArray(EnrollmentSystem system, char* hackerID);
 EnrollmentError getNameFromFile(char** name, FILE* file2Read);
 
 /*
@@ -86,6 +86,7 @@ EnrollmentError destroyEnrollmentSystemArrays(EnrollmentSystem system);
  * createEnrollment segment:
  *
  * EnrollmentSystem createEnrollment(FILE* students, FILE* courses, FILE* hackers)
+ * EnrollmentSystem constructEnrollmentSystem(EnrollmentSystem system);
  * EnrollmentError initStudentArrayOfEnrollmentSystem(EnrollmentSystem system, FILE* students)
  * EnrollmentError initCoursesArrayOfSystem(EnrollmentSystem system, FILE* courses)
  * EnrollmentError initHackersArrayOfSystem(EnrollmentSystem system, FILE* hackers)
@@ -104,46 +105,15 @@ EnrollmentSystem createEnrollment(FILE* students, FILE* courses, FILE* hackers)
         return NULL;
     }
     int errorResult;
-    EnrollmentSystem system = malloc(sizeof(struct EnrollmentSystem_t));
-    if(system == NULL)
-    {
-        return NULL;
-    }
-    system->StudentArraySize = 1;
-    system->courseArraySize = 1;
-    system->hackersArraySize = 1;
-    system->myStudents = malloc(sizeof(Student));
-    if(system->myStudents == NULL)
-    {
-        free(system);
-        return NULL;
-    }
-    system->courses = malloc(sizeof(Course));
-    if(system->courses == NULL)
-    {
-        free(system->myStudents);
-        free(system);
-        return NULL;
-    }
-    system->hackers = malloc(sizeof(Student));
-    if(system->hackers == NULL)
-    {
-        free(system->myStudents);
-        free(system->courses);
-        free(system);
-        return NULL;
-    }
-    //so far so good with no memories, now we need to initialize the arrays
+    EnrollmentSystem system = constructEnrollmentSystem();
 
-
-    errorResult = initStudentArrayOfEnrollmentSystem(system, students);
+    errorResult = createStudentArrayOfEnrollmentSystem(system, students);
     if(errorResult != SUCCESS)
     {
         destroyEnrollmentSystemArrays(system);
     }
-    // so far so good with no memory leaks, now we need to initialize the courses array
 
-    errorResult = initCoursesArrayOfSystem(system, courses);
+    errorResult = createCoursesArrayOfSystem(system, courses);
     if(errorResult != SUCCESS)
     {
         if (errorResult == ALLOC_FAILED)
@@ -152,9 +122,8 @@ EnrollmentSystem createEnrollment(FILE* students, FILE* courses, FILE* hackers)
         }
         destroyEnrollmentSystemArrays(system);
     }
-    // so far so good with no memory leaks, now we need to initialize the hackers array
 
-    errorResult = initHackersArrayOfSystem(system, hackers);
+    errorResult = createHackersArrayOfSystem(system, hackers);
 
     if (errorResult != SUCCESS)
     {
@@ -167,7 +136,41 @@ EnrollmentSystem createEnrollment(FILE* students, FILE* courses, FILE* hackers)
 
 }
 
-EnrollmentError initStudentArrayOfEnrollmentSystem(EnrollmentSystem system, FILE* students)
+EnrollmentSystem constructEnrollmentSystem()
+{
+    EnrollmentSystem system = malloc(sizeof(struct EnrollmentSystem_t));
+    if(system == NULL)
+    {
+        return NULL;
+    }
+    system->StudentArraySize = 1;
+    system->courseArraySize = 1;
+    system->hackersArraySize = 1;
+    system->myStudents = malloc(sizeof(Student));
+    if(system->myStudents == NULL)
+    {
+        free(system);
+        return ERROR;
+    }
+    system->courses = malloc(sizeof(Course));
+    if(system->courses == NULL)
+    {
+        free(system->myStudents);
+        free(system);
+        return ERROR;
+    }
+    system->hackers = malloc(sizeof(Student));
+    if(system->hackers == NULL)
+    {
+        free(system->myStudents);
+        free(system->courses);
+        free(system);
+        return ERROR;
+    }
+}
+
+
+EnrollmentError createStudentArrayOfEnrollmentSystem(EnrollmentSystem system, FILE* students)
 {
     // if one of the parameters is bad.
     if (system == NULL || students == NULL)
