@@ -859,6 +859,7 @@ int calcNameDiff(char* name1, char* name2)
         }
         sum += abs(currDiff);
     }
+    return sum;
 }
 
 int friendshipFuncIDSubtract(Student student1, Student student2)
