@@ -3,6 +3,9 @@
 #include "IsraeliQueue.h"
 #include "HackEnrollment.h"
 
+#define NUM_OF_ARGUMENTS_WITH_FLAG 7
+
+enum {STUDENTS_FILE = 1, COURSES_FILE, HACKERS_FILE, QUEUES_FILE, TARGET_FILE};
 
 // argc is of size 7.
 // argv is ./HackEnrollment <flags> <students> <courses> <hackers> <queues> <target>.
@@ -10,31 +13,30 @@
 int main(int argc, char** argv)
 {
     int flag = 0;
-
-    if (argc == 7 && strcmp(argv[1], "-i"))
+    if (argc == NUM_OF_ARGUMENTS_WITH_FLAG && strcmp(argv[1], "-i") == 0)
     {
         flag = 1;
     }
 
-    FILE* studentsFile = fopen(argv[1+flag], "r");
+    FILE* studentsFile = fopen(argv[STUDENTS_FILE+flag], "r");
     if (studentsFile == NULL)
     {
         return 0;
     }
-    FILE* coursesFile = fopen(argv[2+flag], "r");
+    FILE* coursesFile = fopen(argv[COURSES_FILE+flag], "r");
     if (coursesFile == NULL)
     {
         fclose(studentsFile);
         return 0;
     }
-    FILE* hackersFile = fopen(argv[3+flag], "r");
+    FILE* hackersFile = fopen(argv[HACKERS_FILE+flag], "r");
     if (hackersFile == NULL)
     {
         fclose(studentsFile);
         fclose(coursesFile);
         return 0;
     }
-    FILE* queuesFile = fopen(argv[4+flag], "r");
+    FILE* queuesFile = fopen(argv[QUEUES_FILE+flag], "r");
     if (queuesFile == NULL)
     {
         fclose(studentsFile);
@@ -42,7 +44,7 @@ int main(int argc, char** argv)
         fclose(hackersFile);
         return 0;
     }
-    FILE* outputFile = fopen(argv[5+flag], "w");
+    FILE* outputFile = fopen(argv[TARGET_FILE+flag], "w");
     if (outputFile == NULL)
     {
         fclose(studentsFile);
@@ -52,6 +54,7 @@ int main(int argc, char** argv)
         return 0;
     }
 
+    // Gets enrollment system, already initialized.
     EnrollmentSystem system = createEnrollment(studentsFile, coursesFile, hackersFile);
     if (system == NULL) // if createEnrollment failed.
     {
@@ -63,7 +66,10 @@ int main(int argc, char** argv)
         return 0;
     }
 
+    // Update program to address capital letters according to flag.
     updateCapLettersFlag(system, flag);
+
+    // Gets updated system with filled queues according to queues file.
     system = readEnrollment(system, queuesFile);
     if (system == NULL) // if readEnrollment failed.
     {
@@ -76,13 +82,17 @@ int main(int argc, char** argv)
         return 0;
     }
 
+    // Enqueues Hackers to desired courses and writes output to output file.
     hackEnrollment(system, outputFile);
+
     destroyEnrollmentSystem(system);
+
     fclose(studentsFile);
     fclose(coursesFile);
     fclose(hackersFile);
     fclose(queuesFile);
     fclose(outputFile);
+
     return 0;
 }
 

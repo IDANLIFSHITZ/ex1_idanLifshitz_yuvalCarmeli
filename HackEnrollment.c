@@ -22,12 +22,13 @@ enum {SPACE, NEXT_LINE, END_OF_FILE};
  * createEnrollment functions:
  */
 
+
 EnrollmentError initStudentArrayOfEnrollmentSystem(EnrollmentSystem system, FILE* students);
 EnrollmentError initCoursesArrayOfSystem(EnrollmentSystem system, FILE* courses);
 EnrollmentError initHackersArrayOfSystem(EnrollmentSystem system, FILE* hackers);
 Student createNewStudent();
 Course createNewCourse();
-EnrollmentError InitHackerParams(Student hacker, FILE* hackers);
+EnrollmentError updateHackerParams(Student hacker, FILE* hackers);
 EnrollmentError initAnIDArray(char*** IDArrayPtr, FILE* hackers);
 int getHackerPosInStudentArray(EnrollmentSystem system, char* hackerID);
 EnrollmentError getNameFromFile(char** name, FILE* file2Read);
@@ -90,7 +91,7 @@ EnrollmentError destroyEnrollmentSystemArrays(EnrollmentSystem system);
  * EnrollmentError initHackersArrayOfSystem(EnrollmentSystem system, FILE* hackers)
  * Student createNewStudent()
  * Course createNewCourse()
- * EnrollmentError InitHackerParams(Student hacker, FILE* hackers)
+ * EnrollmentError updateHackerParams(Student hacker, FILE* hackers)
  * EnrollmentError initAnIDArray(char** arr, FILE* hackers)
  * int getHackerPosInStudentArray(EnrollmentSystem sys, char* hackerID)
  * EnrollmentError getNameFromFile(char* name, FILE* file2Read)
@@ -319,7 +320,7 @@ EnrollmentError initHackersArrayOfSystem(EnrollmentSystem system, FILE* hackers)
         hacker = system->myStudents[hackerPos];
 
         //parse all of the hacker information from the file. (courses, friends, enemies)
-        errorResult = InitHackerParams(hacker, hackers);
+        errorResult = updateHackerParams(hacker, hackers);
         if(errorResult == ALLOC_FAILED)
         {
             return ALLOC_FAILED; //need to free all sys arrays content and arrays on caller
@@ -403,7 +404,7 @@ Course createNewCourse()
     return newCourse;
 }
 
-EnrollmentError InitHackerParams(Student hacker, FILE* hackers)
+EnrollmentError updateHackerParams(Student hacker, FILE* hackers)
 {
     char currChar;
     int* tempDesiredCoursesPtr = NULL;
