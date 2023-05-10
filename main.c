@@ -51,6 +51,7 @@ int main(int argc, char** argv)
         fclose(queuesFile);
         return 0;
     }
+
     EnrollmentSystem system = createEnrollment(studentsFile, coursesFile, hackersFile);
     if (system == NULL) // if createEnrollment failed.
     {
@@ -62,7 +63,7 @@ int main(int argc, char** argv)
         return 0;
     }
 
-    updateCapLettersFlag(system, !flag);
+    updateCapLettersFlag(system, flag);
     system = readEnrollment(system, queuesFile);
     if (system == NULL) // if readEnrollment failed.
     {

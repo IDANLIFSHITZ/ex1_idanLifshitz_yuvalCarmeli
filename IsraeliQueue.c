@@ -374,7 +374,7 @@ IsraeliQueue IsraeliQueueMerge(IsraeliQueue* queue ,ComparisonFunction compFunc)
 
 int checkFriend(IsraeliQueue queue, void* item1, void* item2)
 {
-    int sum = 0, sumCount = 0, currItem;
+    double sum = 0, sumCount = 0, currItem;
     bool flag = false;
     for (int i = 0; queue->friendFunc[i] != NULL; i++) //for friend function in queue.
     {

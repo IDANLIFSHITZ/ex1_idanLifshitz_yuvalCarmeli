@@ -18,42 +18,42 @@
 enum {SPACE, NEXT_LINE, END_OF_FILE};
 
 
-EnrollmentError initStudentArrayOfEnrollmentSystem(EnrollmentSystem sys, FILE* students);
-EnrollmentError initCoursesArrayOfSystem(EnrollmentSystem sys, FILE* courses);
-EnrollmentError initHackersArrayOfSystem(EnrollmentSystem sys, FILE* hackers);
+/*
+ * createEnrollment functions:
+ */
 
+EnrollmentError initStudentArrayOfEnrollmentSystem(EnrollmentSystem system, FILE* students);
+EnrollmentError initCoursesArrayOfSystem(EnrollmentSystem system, FILE* courses);
+EnrollmentError initHackersArrayOfSystem(EnrollmentSystem system, FILE* hackers);
 Student createNewStudent();
 Course createNewCourse();
 EnrollmentError InitHackerParams(Student hacker, FILE* hackers);
-
+EnrollmentError initAnIDArray(char** IDArray, FILE* hackers);
+int getHackerPosInStudentArray(EnrollmentSystem system, char* hackerID);
 EnrollmentError getNameFromFile(char* name, FILE* file2Read);
-int getHackerPosInStudentArray(EnrollmentSystem sys, char* hackerID);
 
-void addFriendshipFunctions(IsraeliQueue queue);
-
-int getIDFromFile(char studentID[ID_SIZE], FILE* file2Read);
+/*
+ * readEnrollment functions:
+ */
 
 Course getCourse(Course* courses, int numOfCourses, int courseNum);
 Student getStudent(Student* students, int studentArraySize, char* currStudentID);
-EnrollmentError initAnIDArray(char** arr, FILE* hackers);
-
-
-EnrollmentError destroyStudent(Student student);
-EnrollmentError destroyStudentArrayContent(Student* arr, int size);
-
-EnrollmentError destroyCourse(Course course);
-EnrollmentError destroyCourseArrayContent(Course* arr, int size);
-
-EnrollmentError destroyEnrollmentSystemArraysContent(EnrollmentSystem sys);
-EnrollmentError destroyEnrollmentSystemArrays(EnrollmentSystem sys);
-
-EnrollmentError destroyStringsArray(char** strArr);
-
-
 void removeCapLettersFromNames(Student* students, int studentArraySize);
+void addFriendshipFunctions(IsraeliQueue queue);
 
+/*
+ * hackEnrollment functions:
+ */
 
-int compFunc(Student student1, Student student2);
+int isInCourse(Course course2Check, Student student2Find);
+bool checkSatisfiedHacker(int countSuccessCourses, Student hacker);
+void printFailedHacker(FILE* out, Student hacker2Print);
+void printCourses2File(EnrollmentSystem system, FILE* out);
+void printCourse(Course course2Print, FILE* out);
+
+/*
+ * friendship functions:
+ */
 
 int friendshipFuncHackerFile(Student student1, Student student2);
 int friendshipFuncHackerFileHelper(Student student1, Student student2);
@@ -62,17 +62,24 @@ int friendshipFuncNameDist(Student student1, Student student2);
 int calcNameDiff(char* name1, char* name2);
 int friendshipFuncIDSubtract(Student student1, Student student2);
 
-int isInCourse(Course course2Check, Student student2Find);
-bool checkSatisfiedHacker(int countSuccessCourses, Student hacker);
+int getIDFromFile(char studentID[ID_SIZE], FILE* file2Read);
+EnrollmentError destroyStudentArrayContent(Student* studentArray, int size);
+EnrollmentError destroyStudent(Student student);
+EnrollmentError destroyCourseArrayContent(Course* courseArray, int size);
+EnrollmentError destroyCourse(Course course);
+EnrollmentError destroyStringsArray(char** stringArray);
+EnrollmentError destroyEnrollmentSystemArraysContent(EnrollmentSystem system);
+EnrollmentError destroyEnrollmentSystemArrays(EnrollmentSystem system);
 
-void printFailedHacker(FILE* out, Student hacker2Print);
-void printCourses2File(EnrollmentSystem system, FILE* out);
-void printCourse(Course course2Print, FILE* out);
+
+/*
+ * Code:
+ */
 
 
 /*
  * createEnrollment segment:
- * functions:
+ *
  * EnrollmentSystem createEnrollment(FILE* students, FILE* courses, FILE* hackers)
  * EnrollmentError initStudentArrayOfEnrollmentSystem(EnrollmentSystem system, FILE* students)
  * EnrollmentError initCoursesArrayOfSystem(EnrollmentSystem system, FILE* courses)
@@ -158,14 +165,17 @@ EnrollmentSystem createEnrollment(FILE* students, FILE* courses, FILE* hackers)
 
 EnrollmentError initStudentArrayOfEnrollmentSystem(EnrollmentSystem system, FILE* students)
 {
+    // if one of the parameters is bad.
     if (system == NULL || students == NULL)
     {
-        return BAD_PARAM; // need to free sys arrays on caller
+        return BAD_PARAM;
     }
     int studentsNum = 0, discardInt, result;
     double discardDouble = 0;
     Student* tempStudent = NULL;
     char firstChar = (char)fgetc(students);
+
+    // while file not ended.
     while(firstChar != EOF)
     {
         ungetc(firstChar, students);
@@ -411,7 +421,6 @@ EnrollmentError InitHackerParams(Student hacker, FILE* hackers)
         ungetc(currChar, hackers);
     }
     //get the first course
-    int numOfCourses = 0;
     for(int i = 0; currChar != '\n'; i++)
     {
 
@@ -792,22 +801,32 @@ void printCourse(Course course2Print , FILE* out)
 
 /*
  * friendship functions segment:
- * int friendshipFuncHackerFile(Student student1, Student student2)
- * int friendshipFuncHackerFileHelper(Student student1, Student student2)
- * int friendshipFuncNameDist(Student student1, Student student2)
- * int calcNameDiff(char* name1, char* name2)
+ * int friendshipFuncHackerFile(Student student1, Student student2):
+    gets two students and checks which one is an hacker. returns the result calculated by the helper function.
+
+ * int friendshipFuncHackerFileHelper(Student student1, Student student2):
+    gets two students and assumes the first on is an hacker. looping through friends and enemies to find student2.
+    returns 20 if found friend, -20 enemy and 0 if neither.
+
+ * int friendshipFuncNameDist(Student student1, Student student2):
+    checks to see which student has longer name and surname and gets sum from calcNameDiff. returns adding of sum.
+
+ * int calcNameDiff(char* name1, char* name2):
+    gets two names and assumes the first one is longer. calculates the difference between the names and returns it.
+
  * int friendshipFuncIDSubtract(Student student1, Student student2)
+
  * int compFunc(Student student1, Student student2)
  */
 
 int friendshipFuncHackerFile(Student student1, Student student2)
 {
     int res = 0;
-    if (student1->friendsId != NULL)
+    if (student1->friendsId != NULL) // if student1 is the hacker.
     {
         res = friendshipFuncHackerFileHelper(student1, student2);
     }
-    else if (student2->friendsId != NULL)
+    else if (student2->friendsId != NULL) // if student2 is the hacker.
     {
         res = friendshipFuncHackerFileHelper(student2, student1);
     }
@@ -816,26 +835,29 @@ int friendshipFuncHackerFile(Student student1, Student student2)
 
 int friendshipFuncHackerFileHelper(Student student1, Student student2)
 {
-    for (int i = 0; student1->friendsId[i] != NULL; i++)
+    for (int i = 0; student1->friendsId[i] != NULL; i++) // for friends in friendsId.
     {
-        if (strcmp(student2->StudentID, student1->friendsId[i]) == 0) // if s2 is friend.
+        if (strcmp(student2->StudentID, student1->friendsId[i]) == 0) // if student2 is friend.
         {
             return FRIEND;
         }
     }
-    for (int i = 0; student1->enemiesId[i] != NULL; i++)
+
+    for (int i = 0; student1->enemiesId[i] != NULL; i++) // for enemy in enemiesId.
     {
-        if (strcmp(student2->StudentID, student1->enemiesId[i]) == 0) // if s2 is enemy.
+        if (strcmp(student2->StudentID, student1->enemiesId[i]) == 0) // if student2 is enemy.
         {
             return ENEMY;
         }
     }
-    return NEITHER;
+    return NEITHER; // not a friend nor enemy.
 }
 
 int friendshipFuncNameDist(Student student1, Student student2)
 {
     int sum = 0;
+
+    // calculate first name difference.
     if (strlen(student1->name) >= strlen(student2->name)) // if first student name is longer.
     {
         sum += calcNameDiff(student1->name, student2->name);
@@ -844,6 +866,8 @@ int friendshipFuncNameDist(Student student1, Student student2)
     {
         sum += calcNameDiff(student2->name, student1->name);
     }
+
+    // calculate surname difference.
     if (strlen(student1->surName) >= strlen(student2->surName)) // if first student surname is longer.
     {
         sum += calcNameDiff(student1->surName, student2->surName);
@@ -860,20 +884,19 @@ int calcNameDiff(char* name1, char* name2)
     int sum = 0;
     for (int i = 0; i < strlen(name1); i++)
     {
-        int curr = name1[i];
+        int currDiff = name1[i];
         if (i < strlen(name2))
         {
-            curr -= name2[i];
+            currDiff -= name2[i];
         }
-        sum += abs(curr);
+        sum += abs(currDiff);
     }
-    return sum;
 }
 
 int friendshipFuncIDSubtract(Student student1, Student student2)
 {
     int id1 = 0, id2 = 0;
-    for (int i = 0; i < 9; i++) //for digits in ID of student1 and student2.
+    for (int i = 0; i < ID_SIZE-1; i++) //for digits in ID of student1 and student2.
     {
         id1 *= 10;
         id2 *= 10;
@@ -898,9 +921,6 @@ int compFunc(Student student1, Student student2)
  * EnrollmentError destroyStringsArray(char** stringArray)
  * EnrollmentError destroyEnrollmentSystemArraysContent(EnrollmentSystem system)
  * EnrollmentError destroyEnrollmentSystemArrays(EnrollmentSystem system)
- * EnrollmentError destroyEnrollmentSystemArrays(EnrollmentSystem system)
- * EnrollmentError destroyEnrollmentSystem(EnrollmentSystem system)
- * EnrollmentError destroyEnrollmentSystem(EnrollmentSystem system)
  * EnrollmentError destroyEnrollmentSystem(EnrollmentSystem system)
  * void updateCapLettersFlag(EnrollmentSystem system, bool flag)
  */
@@ -930,79 +950,6 @@ int getIDFromFile(char studentID[ID_SIZE], FILE* file2Read)
     {
         return ERROR;
     }
-}
-
-int isInCourse(Course course2Check, Student student2Find)
-{
-    IsraeliQueue clonedQueue = IsraeliQueueClone(course2Check->queue);
-    if (clonedQueue == NULL)
-    {
-        return -1;
-    }
-    for (int count = 0; count < IsraeliQueueSize(clonedQueue); count++) // for Nodes in queue.
-    {
-        Student currStudent = IsraeliQueueDequeue(clonedQueue);
-        if (compFunc(currStudent, student2Find) && count < course2Check->size)
-        {
-            IsraeliQueueDestroy(clonedQueue);
-            return true;
-        }
-    }
-    IsraeliQueueDestroy(clonedQueue);
-    return false;
-}
-
-bool checkSatisfiedHacker(int countSuccessCourses, Student hacker)
-{
-    if (countSuccessCourses == COURSE_SUCCESS_TH - 1 && hacker->desiredCourses[0] != NULL
-        && hacker->desiredCourses[1] == NULL)
-    {
-        return true;
-    }
-    else if (countSuccessCourses >= COURSE_SUCCESS_TH)
-    {
-        return true;
-    }
-    else if(hacker->desiredCourses[0] == 0){
-        return true;
-    }
-    return false;
-}
-
-void printFailedHacker(FILE* out, Student hacker2Print)
-{
-    char message2Print[100] = "Cannot satisfy constraints for ";
-    strcat(message2Print, hacker2Print->StudentID);
-    fprintf(out, message2Print);
-}
-
-void printCourses2File(EnrollmentSystem sys, FILE* out)
-{
-    for (int i = 0; i < sys->courseArraySize; i++)
-    {
-        if (IsraeliQueueSize(sys->courses[i]->queue) != 0)
-        {
-            printCourse(sys->courses[i], out);
-        }
-    }
-}
-
-void printCourse(Course course2Print , FILE* out)
-{
-    fprintf(out, "%d", course2Print->courseNumber);
-    IsraeliQueue clonedQueue = IsraeliQueueClone(course2Print->queue);
-    if (clonedQueue == NULL)
-    {
-        return;
-    }
-    Student currStudent = IsraeliQueueDequeue(clonedQueue);
-    for (; currStudent != NULL; currStudent = IsraeliQueueDequeue(clonedQueue))
-    {
-        fprintf(out, " ");
-        fprintf(out, "%s", currStudent->StudentID);
-    }
-
-    fprintf(out, "\n");
 }
 
 EnrollmentError destroyStudentArrayContent(Student* studentArray, int size)
