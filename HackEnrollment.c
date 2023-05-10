@@ -1,5 +1,9 @@
+//
+// Created by yuval on 5/2/2023.
+//
 #include "IsraeliQueue.h"
 #include "HackEnrollment.h"
+
 #include <string.h>
 
 #define ID_SIZE 10
@@ -53,16 +57,16 @@ void printCourse(Course course2Print, FILE* out);
 
 int friendshipFuncHackerFile(Student student1, Student student2);
 int friendshipFuncHackerFileHelper(Student student1, Student student2);
+
 int friendshipFuncNameDist(Student student1, Student student2);
 int calcNameDiff(char* name1, char* name2);
 int friendshipFuncIDSubtract(Student student1, Student student2);
 int compFunc(Student student1, Student student2);
+int getIDFromFile(char studentID[ID_SIZE], FILE* file2Read);
 
 /*
- * Help and free memory functions:
+ * destroyEnrollment functions:
  */
-
-int getIDFromFile(char studentID[ID_SIZE], FILE* file2Read);
 EnrollmentError destroyStudentArrayContent(Student* studentArray, int size);
 EnrollmentError destroyStudent(Student student);
 EnrollmentError destroyCourseArrayContent(Course* courseArray, int size);
@@ -92,8 +96,13 @@ EnrollmentError destroyEnrollmentSystemArrays(EnrollmentSystem system);
  * EnrollmentError getNameFromFile(char* name, FILE* file2Read)
  */
 
+
 EnrollmentSystem createEnrollment(FILE* students, FILE* courses, FILE* hackers)
 {
+    if(students == NULL || courses == NULL || hackers == NULL)
+    {
+        return NULL;
+    }
     int errorResult;
     EnrollmentSystem system = malloc(sizeof(struct EnrollmentSystem_t));
     if(system == NULL)
@@ -160,15 +169,18 @@ EnrollmentSystem createEnrollment(FILE* students, FILE* courses, FILE* hackers)
 
 EnrollmentError initStudentArrayOfEnrollmentSystem(EnrollmentSystem system, FILE* students)
 {
-    if (system == NULL || students == NULL) // if one of the parameters is bad.
+    // if one of the parameters is bad.
+    if (system == NULL || students == NULL)
     {
-        return BAD_PARAM; // need to free system arrays on caller.
+        return BAD_PARAM;
     }
     int studentsNum = 0, discardInt, result;
     double discardDouble = 0;
     Student* tempStudent = NULL;
     char firstChar = (char)fgetc(students);
-    while(firstChar != EOF) // while file not ended.
+
+    // while file not ended.
+    while(firstChar != EOF)
     {
         ungetc(firstChar, students);
 
@@ -314,7 +326,7 @@ EnrollmentError initHackersArrayOfSystem(EnrollmentSystem system, FILE* hackers)
         }
         //get the backslash n
         firstChar = fgetc(hackers);
-
+        ungetc(firstChar, hackers);
 
         //store the hacker in the hackers array
         system->hackers[hackersNum] = system->myStudents[hackerPos];
@@ -393,9 +405,9 @@ Course createNewCourse()
 
 EnrollmentError InitHackerParams(Student hacker, FILE* hackers)
 {
-    char currChar = '0';
+    char currChar;
     int* tempDesiredCoursesPtr = NULL;
-    int errorResult;
+    int errorResult, numOfCourses = 0;;
     //allocate desired courses array
     hacker->desiredCourses = malloc(sizeof(int) * 1);
     if (hacker->desiredCourses == NULL)
@@ -405,8 +417,14 @@ EnrollmentError InitHackerParams(Student hacker, FILE* hackers)
 
     hacker->desiredCourses[0] = 0; // zero for the end of the array
 
+    //check if empty line
+    fgetc(hackers);
+    currChar = fgetc(hackers);
+    if (currChar != '\n')
+    {
+        ungetc(currChar, hackers);
+    }
     //get the first course
-    int numOfCourses = 0;
     for(int i = 0; currChar != '\n'; i++)
     {
 
@@ -436,6 +454,13 @@ EnrollmentError InitHackerParams(Student hacker, FILE* hackers)
 
     hacker->friendsId[0] = NULL; // zero for the end of the array
 
+    //check if empty line
+    currChar = fgetc(hackers);
+    if (currChar != '\n')
+    {
+        ungetc(currChar, hackers);
+    }
+
     errorResult = initAnIDArray(hacker->friendsId, hackers);
     if (errorResult == ALLOC_FAILED) {
         return ALLOC_FAILED;
@@ -448,6 +473,13 @@ EnrollmentError InitHackerParams(Student hacker, FILE* hackers)
     }
 
     hacker->enemiesId[0] = NULL; // zero for the end of the array
+
+    //check if empty line
+    currChar = fgetc(hackers);
+    if (currChar != '\n')
+    {
+        ungetc(currChar, hackers);
+    }
 
     errorResult = initAnIDArray(hacker->enemiesId, hackers);
     if (errorResult == ALLOC_FAILED) {
@@ -468,7 +500,7 @@ EnrollmentError initAnIDArray(char** arr, FILE* hackers)
         if (arr[i] == NULL)
         {
             elementsNumber++;
-            temp = realloc(arr, sizeof(int) * (elementsNumber+1));
+            temp = realloc(arr, sizeof(char*) * (elementsNumber+1));
             if (arr == NULL) {
                 return ALLOC_FAILED;
             }
@@ -540,6 +572,10 @@ EnrollmentError getNameFromFile(char* name, FILE* file2Read)
 
 EnrollmentSystem readEnrollment(EnrollmentSystem system, FILE* queues)
 {
+    if (system == NULL)
+    {
+        return NULL;
+    }
     bool isEOF = 0;
     fgetc(queues);
     if (feof(queues) == 0) // if file is not empty.
@@ -728,6 +764,9 @@ bool checkSatisfiedHacker(int countSuccessCourses, Student hacker)
     {
         return true;
     }
+    else if(hacker->desiredCourses[0] == 0){
+        return true;
+    }
     return false;
 }
 
@@ -766,7 +805,6 @@ void printCourse(Course course2Print , FILE* out)
 
     fprintf(out, "\n");
 }
-
 /*
  * friendship functions segment:
  * int friendshipFuncHackerFile(Student student1, Student student2):
@@ -920,6 +958,8 @@ int getIDFromFile(char studentID[ID_SIZE], FILE* file2Read)
         return ERROR;
     }
 }
+
+
 
 EnrollmentError destroyStudentArrayContent(Student* studentArray, int size)
 {
