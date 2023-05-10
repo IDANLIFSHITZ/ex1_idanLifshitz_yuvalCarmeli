@@ -74,7 +74,8 @@ IsraeliQueue IsraeliQueueCreate(FriendshipFunction* friendFunc, ComparisonFuncti
 
 /**Returns a new queue with the same elements as the parameter. If the parameter is NULL,
  * NULL is returned.*/
-IsraeliQueue IsraeliQueueClone(IsraeliQueue queue) {
+IsraeliQueue IsraeliQueueClone(IsraeliQueue queue)
+{
     if (queue == NULL)
     {
         return NULL;
