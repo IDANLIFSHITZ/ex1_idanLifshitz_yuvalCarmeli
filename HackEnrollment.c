@@ -1,6 +1,3 @@
-//
-// Created by yuval on 5/2/2023.
-//
 #include "IsraeliQueue.h"
 #include "HackEnrollment.h"
 
@@ -22,7 +19,7 @@ enum {SPACE, NEXT_LINE, END_OF_FILE};
  * createEnrollment functions:
  */
 
-EnrollmentSystem constructEnrollmentSystem(EnrollmentSystem system);
+EnrollmentSystem constructEnrollmentSystem();
 EnrollmentError createStudentArrayOfEnrollmentSystem(EnrollmentSystem system, FILE* students);
 EnrollmentError createCoursesArrayOfSystem(EnrollmentSystem system, FILE* courses);
 EnrollmentError createHackersArrayOfSystem(EnrollmentSystem system, FILE* hackers);
@@ -68,6 +65,7 @@ int getIDFromFile(char studentID[ID_SIZE], FILE* file2Read);
 /*
  * destroyEnrollment functions:
  */
+
 EnrollmentError destroyStudentArrayContent(Student* studentArray, int size);
 EnrollmentError destroyStudent(Student student);
 EnrollmentError destroyCourseArrayContent(Course* courseArray, int size);
@@ -87,32 +85,40 @@ EnrollmentError destroyEnrollmentSystemArrays(EnrollmentSystem system);
  *
  * EnrollmentSystem createEnrollment(FILE* students, FILE* courses, FILE* hackers)
  * EnrollmentSystem constructEnrollmentSystem(EnrollmentSystem system);
- * EnrollmentError initStudentArrayOfEnrollmentSystem(EnrollmentSystem system, FILE* students)
- * EnrollmentError initCoursesArrayOfSystem(EnrollmentSystem system, FILE* courses)
- * EnrollmentError initHackersArrayOfSystem(EnrollmentSystem system, FILE* hackers)
+ * EnrollmentError createStudentArrayOfEnrollmentSystem(EnrollmentSystem system, FILE* students)
+ * EnrollmentError createCoursesArrayOfSystem(EnrollmentSystem system, FILE* courses)
+ * EnrollmentError createHackersArrayOfSystem(EnrollmentSystem system, FILE* hackers)
  * Student createNewStudent()
  * Course createNewCourse()
  * EnrollmentError updateHackerParams(Student hacker, FILE* hackers)
- * EnrollmentError initAnIDArray(char** arr, FILE* hackers)
+ * EnrollmentError createAnIDArray(char** arr, FILE* hackers)
  * int getHackerPosInStudentArray(EnrollmentSystem sys, char* hackerID)
  * EnrollmentError getNameFromFile(char* name, FILE* file2Read)
  */
 
 EnrollmentSystem createEnrollment(FILE* students, FILE* courses, FILE* hackers)
 {
+    // checks for bad parameters.
     if(students == NULL || courses == NULL || hackers == NULL)
     {
         return NULL;
     }
-    int errorResult;
-    EnrollmentSystem system = constructEnrollmentSystem();
 
-    errorResult = createStudentArrayOfEnrollmentSystem(system, students);
+    EnrollmentSystem system = constructEnrollmentSystem();
+    if (system == NULL)
+    {
+        return NULL;
+    }
+
+    // add students from file to array.
+    int errorResult = createStudentArrayOfEnrollmentSystem(system, students);
     if(errorResult != SUCCESS)
     {
         destroyEnrollmentSystemArrays(system);
+        return NULL;
     }
 
+    // add courses from file to array.
     errorResult = createCoursesArrayOfSystem(system, courses);
     if(errorResult != SUCCESS)
     {
@@ -121,10 +127,11 @@ EnrollmentSystem createEnrollment(FILE* students, FILE* courses, FILE* hackers)
             destroyStudentArrayContent(system->myStudents, system->StudentArraySize);
         }
         destroyEnrollmentSystemArrays(system);
+        return NULL;
     }
 
+    // add hackers from file to array.
     errorResult = createHackersArrayOfSystem(system, hackers);
-
     if (errorResult != SUCCESS)
     {
         destroyEnrollmentSystemArraysContent(system);
@@ -133,42 +140,48 @@ EnrollmentSystem createEnrollment(FILE* students, FILE* courses, FILE* hackers)
     }
 
     return system;
-
 }
 
 EnrollmentSystem constructEnrollmentSystem()
 {
     EnrollmentSystem system = malloc(sizeof(struct EnrollmentSystem_t));
-    if(system == NULL)
+    if(system == NULL) // if memory allocation failed.
     {
         return NULL;
     }
     system->StudentArraySize = 1;
     system->courseArraySize = 1;
     system->hackersArraySize = 1;
+
+    // creates students array.
     system->myStudents = malloc(sizeof(Student));
     if(system->myStudents == NULL)
     {
         free(system);
-        return ERROR;
+        return NULL;
     }
+
+    // creates courses array.
     system->courses = malloc(sizeof(Course));
     if(system->courses == NULL)
     {
         free(system->myStudents);
         free(system);
-        return ERROR;
+        return NULL;
     }
+
+    // creates hackers array.
     system->hackers = malloc(sizeof(Student));
     if(system->hackers == NULL)
     {
         free(system->myStudents);
         free(system->courses);
         free(system);
-        return ERROR;
+        return NULL;
     }
-}
 
+    return system;
+}
 
 EnrollmentError createStudentArrayOfEnrollmentSystem(EnrollmentSystem system, FILE* students)
 {
@@ -177,6 +190,7 @@ EnrollmentError createStudentArrayOfEnrollmentSystem(EnrollmentSystem system, FI
     {
         return BAD_PARAM;
     }
+
     int studentsNum = 0, discardInt, result;
     double discardDouble = 0;
     Student* tempStudent = NULL;
@@ -247,7 +261,7 @@ EnrollmentError createStudentArrayOfEnrollmentSystem(EnrollmentSystem system, FI
     return SUCCESS;
 }
 
-EnrollmentError initCoursesArrayOfSystem(EnrollmentSystem system, FILE* courses)
+EnrollmentError createCoursesArrayOfSystem(EnrollmentSystem system, FILE* courses)
 {
     if (system == NULL || courses == NULL)
     {
@@ -290,7 +304,7 @@ EnrollmentError initCoursesArrayOfSystem(EnrollmentSystem system, FILE* courses)
     return SUCCESS;
 }
 
-EnrollmentError initHackersArrayOfSystem(EnrollmentSystem system, FILE* hackers)
+EnrollmentError createHackersArrayOfSystem(EnrollmentSystem system, FILE* hackers)
 {
     int hackerPos, errorResult, hackersNum = 0;
     Student hacker = NULL;
@@ -319,7 +333,7 @@ EnrollmentError initHackersArrayOfSystem(EnrollmentSystem system, FILE* hackers)
         getIDFromFile(hackerID, hackers);
 
         //get the hacker position in the student array
-        hackerPos = getHackerPosInStudentArray(system, hackerID);
+        hackerPos = getHackerPositionInStudentArray(system, hackerID);
         hacker = system->myStudents[hackerPos];
 
         //parse all of the hacker information from the file. (courses, friends, enemies)
@@ -466,7 +480,7 @@ EnrollmentError updateHackerParams(Student hacker, FILE* hackers)
     if (currChar != '\n')
     {
         ungetc(currChar, hackers);
-        errorResult = initAnIDArray(&(hacker->friendsId), hackers);
+        errorResult = createAnIDArray(&(hacker->friendsId), hackers);
         if (errorResult == ALLOC_FAILED)
         {
             return ALLOC_FAILED;
@@ -487,18 +501,17 @@ EnrollmentError updateHackerParams(Student hacker, FILE* hackers)
     if (currChar != '\n')
     {
         ungetc(currChar, hackers);
-        errorResult = initAnIDArray(&(hacker->enemiesId), hackers);
+        errorResult = createAnIDArray(&(hacker->enemiesId), hackers);
         if (errorResult == ALLOC_FAILED)
         {
             return ALLOC_FAILED;
         }
     }
 
-
     return SUCCESS;
 }
 
-EnrollmentError initAnIDArray(char*** IDArrayPtr, FILE* hackers)
+EnrollmentError createAnIDArray(char*** IDArrayPtr, FILE* hackers)
 {
     char currChar = '0';
     int elementsNumber = 0;
@@ -532,11 +545,11 @@ EnrollmentError initAnIDArray(char*** IDArrayPtr, FILE* hackers)
     return SUCCESS;
 }
 
-int getHackerPosInStudentArray(EnrollmentSystem sys, char* hackerID)
+int getHackerPositionInStudentArray(EnrollmentSystem system, char* hackerID)
 {
-    for (int i = 0; i < sys->StudentArraySize; i++)
+    for (int i = 0; i < system->StudentArraySize; i++)
     {
-        if (strcmp(sys->myStudents[i]->StudentID, hackerID) == 0)
+        if (strcmp(system->myStudents[i]->StudentID, hackerID) == 0)
         {
             return i;
         }
