@@ -63,7 +63,6 @@ IsraeliQueue IsraeliQueueCreate(FriendshipFunction* friendFunc, ComparisonFuncti
         free(newQueue);
         return NULL;
     }
-    free(friendFunc);
     newQueue->compFunc = compFunc;
     newQueue->friend_th = friend_th;
     newQueue->enemy_th = enemy_th;
@@ -84,8 +83,9 @@ IsraeliQueue IsraeliQueueClone(IsraeliQueue queue) {
     {
         return NULL;
     }
-    newQueue->friendFunc = createFriendFuncArray(queue->friendFunc);
-    if (newQueue->friendFunc == NULL)
+
+    FriendshipFunction* tempFriendFuncs = createFriendFuncArray(queue->friendFunc);
+    if (tempFriendFuncs == NULL)
     {
         IsraeliQueueDestroy(newQueue);
         return NULL;
@@ -417,7 +417,6 @@ FriendshipFunction* createFriendFuncArray(FriendshipFunction* friendFunc)
     {
         newFriendFunc[i] = friendFunc[i];
     }
-    free(friendFunc);
     newFriendFunc[size] = NULL;
     return newFriendFunc;
 }
