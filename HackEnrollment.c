@@ -303,7 +303,7 @@ EnrollmentError initHackersArrayOfSystem(EnrollmentSystem system, FILE* hackers)
         }
         //get the backslash n
         firstChar = fgetc(hackers);
-
+        ungetc(firstChar, hackers);
 
         //store the hacker in the hackers array
         system->hackers[hackersNum] = system->myStudents[hackerPos];
