@@ -168,11 +168,12 @@ IsraeliQueueError IsraeliQueueAddFriendshipMeasure(IsraeliQueue queue, Friendshi
     for (size = 0; queue->friendFunc[size] != NULL; size++) {
     }
 
-    queue->friendFunc = (FriendshipFunction*)realloc(queue->friendFunc ,sizeof(FriendshipFunction)*(size+2));
-    if (queue->friendFunc == NULL)
+    FriendshipFunction* temp = (FriendshipFunction*)realloc(queue->friendFunc ,sizeof(FriendshipFunction)*(size+1));
+    if (temp == NULL)
     {
         return ISRAELIQUEUE_ALLOC_FAILED;
     }
+    queue->friendFunc = temp;
 
     queue->friendFunc[size] = friendFunc2Add;
     queue->friendFunc[size+1] = NULL;

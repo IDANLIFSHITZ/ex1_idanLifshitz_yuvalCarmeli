@@ -402,7 +402,7 @@ Course createNewCourse()
     newCourse->courseNumber = 0;
     newCourse->size = 0;
 
-    FriendshipFunction* friendshipFunctionArr = malloc(sizeof(FriendshipFunction));
+    FriendshipFunction* friendshipFunctionArr = (FriendshipFunction*)malloc(sizeof(*friendshipFunctionArr));
     if(friendshipFunctionArr == NULL)
     {
         free(newCourse);
