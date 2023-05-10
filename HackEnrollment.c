@@ -43,7 +43,6 @@ void addFriendshipFunctions(IsraeliQueue queue);
  * hackEnrollment functions:
  */
 
-
 int isInCourse(Course course2Check, Student student2Find);
 bool checkSatisfiedHacker(int countSuccessCourses, Student hacker);
 void printFailedHacker(FILE* out, Student hacker2Print);
@@ -66,6 +65,7 @@ int getIDFromFile(char studentID[ID_SIZE], FILE* file2Read);
 /*
  * destroyEnrollment functions:
  */
+
 EnrollmentError destroyStudentArrayContent(Student* studentArray, int size);
 EnrollmentError destroyStudent(Student student);
 EnrollmentError destroyCourseArrayContent(Course* courseArray, int size);
