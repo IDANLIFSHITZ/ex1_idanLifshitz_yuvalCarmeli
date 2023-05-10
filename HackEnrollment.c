@@ -340,6 +340,7 @@ EnrollmentError createHackersArrayOfSystem(EnrollmentSystem system, FILE* hacker
         errorResult = updateHackerParams(hacker, hackers);
         if(errorResult == ALLOC_FAILED)
         {
+
             return ALLOC_FAILED; //need to free all sys arrays content and arrays on caller
         }
         //get the backslash n
@@ -1000,9 +1001,13 @@ EnrollmentError destroyStudent(Student student)
     {
         destroyStringsArray(student->friendsId);
     }
-    if (student->desiredCourses != NULL)
+    if (student->enemiesId != NULL)
     {
         destroyStringsArray(student->enemiesId);
+    }
+    if (student->desiredCourses != NULL)
+    {
+        free(student->desiredCourses);
     }
     free(student);
     return SUCCESS;
