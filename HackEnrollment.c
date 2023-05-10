@@ -61,8 +61,12 @@ int friendshipFuncHackerFileHelper(Student student1, Student student2);
 int friendshipFuncNameDist(Student student1, Student student2);
 int calcNameDiff(char* name1, char* name2);
 int friendshipFuncIDSubtract(Student student1, Student student2);
-
+int compFunc(Student student1, Student student2);
 int getIDFromFile(char studentID[ID_SIZE], FILE* file2Read);
+
+/*
+ * destroyEnrollment functions:
+ */
 EnrollmentError destroyStudentArrayContent(Student* studentArray, int size);
 EnrollmentError destroyStudent(Student student);
 EnrollmentError destroyCourseArrayContent(Course* courseArray, int size);
@@ -760,6 +764,9 @@ bool checkSatisfiedHacker(int countSuccessCourses, Student hacker)
     {
         return true;
     }
+    else if(hacker->desiredCourses[0] == 0){
+        return true;
+    }
     return false;
 }
 
@@ -798,7 +805,6 @@ void printCourse(Course course2Print , FILE* out)
 
     fprintf(out, "\n");
 }
-
 /*
  * friendship functions segment:
  * int friendshipFuncHackerFile(Student student1, Student student2):
@@ -891,6 +897,7 @@ int calcNameDiff(char* name1, char* name2)
         }
         sum += abs(currDiff);
     }
+    return sum;
 }
 
 int friendshipFuncIDSubtract(Student student1, Student student2)
@@ -951,6 +958,8 @@ int getIDFromFile(char studentID[ID_SIZE], FILE* file2Read)
         return ERROR;
     }
 }
+
+
 
 EnrollmentError destroyStudentArrayContent(Student* studentArray, int size)
 {
