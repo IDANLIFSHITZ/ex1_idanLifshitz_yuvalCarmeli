@@ -63,6 +63,7 @@ IsraeliQueue IsraeliQueueCreate(FriendshipFunction* friendFunc, ComparisonFuncti
         free(newQueue);
         return NULL;
     }
+    free(friendFunc);
     newQueue->compFunc = compFunc;
     newQueue->friend_th = friend_th;
     newQueue->enemy_th = enemy_th;
@@ -168,7 +169,7 @@ IsraeliQueueError IsraeliQueueAddFriendshipMeasure(IsraeliQueue queue, Friendshi
     for (size = 0; queue->friendFunc[size] != NULL; size++) {
     }
 
-    FriendshipFunction* temp = (FriendshipFunction*)realloc(queue->friendFunc ,sizeof(FriendshipFunction)*(size+1));
+    FriendshipFunction* temp = (FriendshipFunction*)realloc(queue->friendFunc ,sizeof(FriendshipFunction)*(size+2));
     if (temp == NULL)
     {
         return ISRAELIQUEUE_ALLOC_FAILED;
