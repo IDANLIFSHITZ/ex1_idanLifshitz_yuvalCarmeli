@@ -803,13 +803,13 @@ void printFailedHacker(FILE* out, Student hacker2Print)
     fprintf(out, message2Print);
 }
 
-void printCourses2File(EnrollmentSystem sys, FILE* out)
+void printCourses2File(EnrollmentSystem system, FILE* out)
 {
-    for (int i = 0; i < sys->courseArraySize; i++)
+    for (int i = 0; i < system->courseArraySize; i++)
     {
-        if (IsraeliQueueSize(sys->courses[i]->queue) != 0)
+        if (IsraeliQueueSize(system->courses[i]->queue) != 0)
         {
-            printCourse(sys->courses[i], out);
+            printCourse(system->courses[i], out);
         }
     }
 }
@@ -854,16 +854,16 @@ void printCourse(Course course2Print , FILE* out)
 
 int friendshipFuncHackerFile(Student student1, Student student2)
 {
-    int res = 0;
+    int result = 0;
     if (student1->friendsId != NULL) // if student1 is the hacker.
     {
-        res = friendshipFuncHackerFileHelper(student1, student2);
+        result = friendshipFuncHackerFileHelper(student1, student2);
     }
     else if (student2->friendsId != NULL) // if student2 is the hacker.
     {
-        res = friendshipFuncHackerFileHelper(student2, student1);
+        result = friendshipFuncHackerFileHelper(student2, student1);
     }
-    return res;
+    return result;
 }
 
 int friendshipFuncHackerFileHelper(Student student1, Student student2)
@@ -937,7 +937,7 @@ int friendshipFuncIDSubtract(Student student1, Student student2)
         id1 += student1->StudentID[i];
         id2 += student2->StudentID[i];
     }
-    return abs(id1-id2); // returns abs of difference between IDs.
+    return abs(id1-id2); // returns absolute value of difference between IDs.
 }
 
 int compFunc(Student student1, Student student2)
@@ -976,13 +976,9 @@ int getIDFromFile(char studentID[ID_SIZE], FILE* file2Read)
     {
         return NEXT_LINE;
     }
-    else if (lastChar == EOF)
-    {
-        return END_OF_FILE;
-    }
     else
     {
-        return ERROR;
+        return END_OF_FILE;
     }
 }
 
