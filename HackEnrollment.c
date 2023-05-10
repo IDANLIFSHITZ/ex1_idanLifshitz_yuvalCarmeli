@@ -199,7 +199,8 @@ EnrollmentError initStudentArrayOfEnrollmentSystem(EnrollmentSystem system, FILE
 
         //create new student
         Student newStudent = createNewStudent();
-        if(newStudent == NULL){
+        if(newStudent == NULL)
+        {
             destroyStudentArrayContent(system->myStudents, system->StudentArraySize-1);
             return ALLOC_FAILED; //no need to free, only have to free sys on the caller
         }
