@@ -731,6 +731,7 @@ EnrollmentError addFriendshipFunctions(IsraeliQueue queue)
     {
         return ALLOC_FAILED;
     }
+    return SUCCESS;
 }
 
 /*
@@ -847,7 +848,7 @@ void printCourse(Course course2Print , FILE* out)
         fprintf(out, " ");
         fprintf(out, currStudent->StudentID);
     }
-
+    IsraeliQueueDestroy(clonedQueue);
     fprintf(out, "\n");
 }
 
