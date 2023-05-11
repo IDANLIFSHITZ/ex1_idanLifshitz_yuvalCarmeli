@@ -16,7 +16,7 @@ OBJS_FILES = HackEnrollment.o IsraeliQueue.o main.o
 COMPILE_TOOL = $(CC) $(CFLAGS) $(DEBUG_FLAG) -c $(TOOL_DIR)/$*.c -o $@
 
 # Rule to build the executable
-$(TARGET): $(OBJS)
+$(TARGET): $(OBJS_FILES)
 	$(CC) $(CFLAGS) $(DEBUG_FLAG) $(OBJS_FILES) -o $(EXEC)
 
 # Rule to build object files
@@ -29,4 +29,4 @@ HackEnrollment.o: $(TOOL_DIR)/HackEnrollment.c $(TOOL_DIR)/HackEnrollment.h $(PA
 IsraeliQueue.o: IsraeliQueue.c $(PATH)/IsraeliQueue.h
 
 clean:
-	rm -f $(OBJS) $(EXEC)
+	rm -f $(OBJS_FILES) $(EXEC)
