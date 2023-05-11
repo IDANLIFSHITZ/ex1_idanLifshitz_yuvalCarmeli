@@ -786,6 +786,7 @@ int isInCourse(Course course2Check, Student student2Find)
     }
 
     int queueSize = IsraeliQueueSize(clonedQueue);
+
     for (int count = 0; count < queueSize; count++) // for Nodes in queue.
     {
         Student currStudent = IsraeliQueueDequeue(clonedQueue);
@@ -832,6 +833,7 @@ void printCourses2File(EnrollmentSystem system, FILE* out)
             printCourse(system->courses[i], out);
         }
     }
+    ungetc('\n', out);
 }
 
 void printCourse(Course course2Print , FILE* out)
