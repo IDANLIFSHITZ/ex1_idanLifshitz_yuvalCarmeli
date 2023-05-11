@@ -7,9 +7,9 @@ OBJS_FILES = main.o HackEnrollment.o IsraeliQueue.o
 # define the executable file name
 EXEC = HackEnrollment
 # define the debug flag
-DEBUG_FLAG = -g# now empty - will be filled in the debug rule
+DEBUG_FLAG = # now empty - will be filled in the debug rule
 # define any compile-time flags
-CFLAGS = -std=c99 -lm -I$(PATH) -Itool -Wall -pedantic-errors Werror -DNDEBUG
+CFLAGS = -std=c99 -lm -I$(PATH) -Itool -Wall -pedantic-errors -Werror -DNDEBUG
 
 # define the path of the files
 PATH = /new_home/courses/mtm/public/2223b/ex1

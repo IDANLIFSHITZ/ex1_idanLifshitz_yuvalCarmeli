@@ -29,9 +29,9 @@ int checkFriend(IsraeliQueue queue, void* item1, void* item2);
 
 FriendshipFunction* createFriendFuncArray(FriendshipFunction* friendFunc);
 
-int getFriendshipThresholdForMerged(IsraeliQueue* , int);
+double getFriendshipThresholdForMerged(IsraeliQueue* , int);
 
-int getEnemyThresholdForMerged(IsraeliQueue* , int);
+double getEnemyThresholdForMerged(IsraeliQueue* , int);
 
 bool checkInArr(Node* arr, int size, Node Node2check);
 
@@ -40,16 +40,9 @@ Node createNewNode(void* student, int friendNum, int enemyNum);
 void enqueueNode(IsraeliQueue queue, Node node2Add);
 
 
-/**Error clarification:
- * ISRAELIQUEUE_SUCCESS: Indicates the function has completed its task successfully with no errors.
- * ISRAELIQUEUE_ALLOC_FAILED: Indicates memory allocation failed during the execution of the function.
- * ISRAELIQUEUE_BAD_PARAM: Indicates an illegal parameter was passed.
- * ISRAELI_QUEUE_ERROR: Indicates any error beyond the above.
- * */
-
-/**Creates a new IsraeliQueue_t object with the provided friendship functions, a NULL-terminated array,
- * comparison function, friendship threshold and rivalry threshold. Returns a pointer
- * to the new object. In case of failure, return NULL.*/
+/*
+ * code segment:
+ */
 IsraeliQueue IsraeliQueueCreate(FriendshipFunction* friendFunc, ComparisonFunction compFunc, int friend_th, int enemy_th)
 {
     IsraeliQueue newQueue = (IsraeliQueue)malloc(sizeof(struct IsraeliQueue_t));
@@ -162,7 +155,8 @@ IsraeliQueueError IsraeliQueueAddFriendshipMeasure(IsraeliQueue queue, Friendshi
     for (size = 0; queue->friendFunc[size] != NULL; size++) {
     }
 
-    FriendshipFunction* tempFuncArray = (FriendshipFunction*)realloc(queue->friendFunc ,sizeof(FriendshipFunction)*(size+2));
+    FriendshipFunction* tempFuncArray = (FriendshipFunction*)realloc(queue->friendFunc ,
+                                                                     sizeof(FriendshipFunction)*(size+2));
     if (tempFuncArray == NULL)
     {
         IsraeliQueueDestroy(queue);
@@ -415,8 +409,8 @@ FriendshipFunction* createFriendFuncArray(FriendshipFunction* friendFunc)
     return newFriendFunc;
 }
 
-int getFriendshipThresholdForMerged(IsraeliQueue* queue, int size){
-    int friend_th = 0;
+double getFriendshipThresholdForMerged(IsraeliQueue* queue, int size){
+    double friend_th = 0;
     for (int i = 0; i < size; i++)
     {
         friend_th += queue[i]->friend_th;
@@ -424,8 +418,8 @@ int getFriendshipThresholdForMerged(IsraeliQueue* queue, int size){
     return friend_th / size;
 }
 
-int getEnemyThresholdForMerged(IsraeliQueue* queue, int size){
-    int enemy_th = 1;
+double getEnemyThresholdForMerged(IsraeliQueue* queue, int size){
+    double enemy_th = 1;
     double root;
     for (int i = 0; i < size; i++)
     {
