@@ -413,9 +413,10 @@ Course createNewCourse()
     //need to fill compFunc
 
     newCourse->queue = IsraeliQueueCreate(friendshipFunctionArr, (int (*)(void*, void*))compFunc, 20, 0);
+    free(friendshipFunctionArr);
+
     if(newCourse->queue == NULL)
     {
-        free(friendshipFunctionArr);
         free(newCourse);
         return NULL;
     }

@@ -64,7 +64,6 @@ IsraeliQueue IsraeliQueueCreate(FriendshipFunction* friendFunc, ComparisonFuncti
         return NULL;
     }
 
-    free(friendFunc);
     newQueue->compFunc = compFunc;
     newQueue->friend_th = friend_th;
     newQueue->enemy_th = enemy_th;
@@ -80,21 +79,12 @@ IsraeliQueue IsraeliQueueClone(IsraeliQueue queue) {
     {
         return NULL;
     }
-    IsraeliQueue newQueue = (IsraeliQueue) malloc(sizeof(struct IsraeliQueue_t));
+
+    IsraeliQueue newQueue = IsraeliQueueCreate(queue->friendFunc, queue->compFunc, queue->friend_th, queue->enemy_th);
     if (newQueue == NULL)
     {
         return NULL;
     }
-
-    FriendshipFunction* tempFriendFuncs = createFriendFuncArray(queue->friendFunc);
-    if (tempFriendFuncs == NULL)
-    {
-        IsraeliQueueDestroy(newQueue);
-        return NULL;
-    }
-    newQueue->compFunc = queue->compFunc;
-    newQueue->friend_th = queue->friend_th;
-    newQueue->enemy_th = queue->enemy_th;
 
     // create new Head.
     newQueue->head = createNewNode(queue->head->student, queue->head->friendNum, queue->head->enemyNum);
@@ -331,7 +321,7 @@ IsraeliQueue IsraeliQueueMerge(IsraeliQueue* queue ,ComparisonFunction compFunc)
     }
 
     //creates friendship function array for merged queue.
-    FriendshipFunction *mergedFunctions = createFriendFuncArray(queue[0]->friendFunc);
+    FriendshipFunction* mergedFunctions = createFriendFuncArray(queue[0]->friendFunc);
     if (mergedFunctions == NULL)
     {
         return NULL;
@@ -341,9 +331,9 @@ IsraeliQueue IsraeliQueueMerge(IsraeliQueue* queue ,ComparisonFunction compFunc)
     IsraeliQueue mergedQueue = IsraeliQueueCreate(mergedFunctions, compFunc,
                                                   getFriendshipThresholdForMerged(queue, size),
                                                   getEnemyThresholdForMerged(queue, size));
+    free(mergedFunctions);
     if (mergedQueue == NULL)
     {
-        free(mergedFunctions);
         return NULL;
     }
 
@@ -409,16 +399,17 @@ FriendshipFunction* createFriendFuncArray(FriendshipFunction* friendFunc)
     for (size = 0; friendFunc[size] != NULL; size++){
     }
 
+
     FriendshipFunction* newFriendFunc = (FriendshipFunction*)malloc(sizeof(FriendshipFunction)*(size+1));
     if (newFriendFunc==NULL)
     {
-        free(friendFunc);
         return NULL;
     }
     for (int i = 0; i < size; i++)
     {
         newFriendFunc[i] = friendFunc[i];
     }
+
     newFriendFunc[size] = NULL;
     return newFriendFunc;
 }
