@@ -63,6 +63,7 @@ IsraeliQueue IsraeliQueueCreate(FriendshipFunction* friendFunc, ComparisonFuncti
         free(newQueue);
         return NULL;
     }
+
     free(friendFunc);
     newQueue->compFunc = compFunc;
     newQueue->friend_th = friend_th;
