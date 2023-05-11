@@ -1,34 +1,31 @@
 # Makefile
 
-# define the C compiler to use
+# Define the compiler
 CC = gcc
-# define object files
-OBJS_FILES = main.o HackEnrollment.o IsraeliQueue.o
-# define the executable file name
-EXEC = HackEnrollment
-# define the debug flag
-DEBUG_FLAG = # now empty - will be filled in the debug rule
-# define any compile-time flags
-CFLAGS = -std=c99 -lm -I$(PATH) -Itool -Wall -pedantic-errors -Werror -DNDEBUG
 
-# define the path of the files
-PATH = /new_home/courses/mtm/public/2223b/ex1
+QUEUE = /new_home/courses/mtm/public/2223b/ex1
 TOOL = tool
+CFLAGS = -std=c99 -lm -I$(QUEUE) -I$(TOOL) -Wall -pedantic-errors -Werror -DNDEBUG
+TARGET = program
+EXEC = HackEnrollment
+DEBUG_FLAG = #now empty
+OBJS = HackEnrollment.o IsraeliQueue.o main.o
 
-# define basic compile command
-COMPILE_TOOL = $(CC) $(DEBUG_FLAG) $(CFLAGS) -c $(TOOL)/$*.c -o $@
+COMPILE_TOOL = $(CC) $(CFLAGS) $(DEBUG_FLAG) -c $(TOOL)/$*.c -o $@
 
-# how to build the executable
-program: $(OBJS_FILES)
-	$(CC) $(DEBUG_FLAG) $(CFLAGS) $(OBJS_FILES) -o $(EXEC)
+# Rule to build the executable
+$(TARGET): $(OBJS)
+	$(CC) $(CFLAGS) $(DEBUG_FLAG) $(OBJS) -o $(EXEC)
 
+# Rule to build object files
 main.o: $(TOOL)/main.c $(TOOL)/HackEnrollment.h
 	$(COMPILE_TOOL)
 
-HackEnrollment.o: $(TOOL)/HackEnrollment.c $(TOOL)/HackEnrollment.h $(PATH)/IsraeliQueue.h
+HackEnrollment.o: $(TOOL)/HackEnrollment.c $(TOOL)/HackEnrollment.h $(QUEUE)/IsraeliQueue.h
 	$(COMPILE_TOOL)
 
-IsraeliQueue.o: IsraeliQueue.c $(PATH)/IsraeliQueue.h
+IsraeliQueue.o: IsraeliQueue.c $(QUEUE)/IsraeliQueue.h
 
+# Rule to clean the project
 clean:
 	rm -f $(OBJS) $(EXEC)
