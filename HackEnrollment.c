@@ -20,15 +20,19 @@ enum {SPACE, NEXT_LINE, END_OF_FILE};
  */
 
 EnrollmentSystem constructEnrollmentSystem();
+
 EnrollmentError createStudentArrayOfEnrollmentSystem(EnrollmentSystem system, FILE* students);
-EnrollmentError createCoursesArrayOfSystem(EnrollmentSystem system, FILE* courses);
-EnrollmentError createHackersArrayOfSystem(EnrollmentSystem system, FILE* hackers);
 Student createNewStudent();
+EnrollmentError updateStudentParameters(Student newStudent, FILE* studentsFile, EnrollmentSystem system);
+
+EnrollmentError createCoursesArrayOfSystem(EnrollmentSystem system, FILE* courses);
 Course createNewCourse();
+
+EnrollmentError createHackersArrayOfSystem(EnrollmentSystem system, FILE* hackers);
 EnrollmentError updateHackerParams(Student hacker, FILE* hackers);
+
 EnrollmentError createAnIDArray(char*** IDArrayPtr, FILE* hackers);
 int getHackerPositionInStudentArray(EnrollmentSystem system, char* hackerID);
-EnrollmentError getNameFromFile(char** name, FILE* file2Read);
 
 /*
  * readEnrollment functions:
@@ -58,9 +62,10 @@ int friendshipFuncHackerFileHelper(Student student1, Student student2);
 
 int friendshipFuncNameDist(Student student1, Student student2);
 int calcNameDiff(char* name1, char* name2);
+
 int friendshipFuncIDSubtract(Student student1, Student student2);
+
 int compFunc(Student student1, Student student2);
-int getIDFromFile(char studentID[ID_SIZE], FILE* file2Read);
 
 /*
  * destroyEnrollment functions:
@@ -68,12 +73,22 @@ int getIDFromFile(char studentID[ID_SIZE], FILE* file2Read);
 
 EnrollmentError destroyStudentArrayContent(Student* studentArray, int size);
 EnrollmentError destroyStudent(Student student);
+
 EnrollmentError destroyCourseArrayContent(Course* courseArray, int size);
 EnrollmentError destroyCourse(Course course);
+
 EnrollmentError destroyStringsArray(char** stringArray);
+
 EnrollmentError destroyEnrollmentSystemArraysContent(EnrollmentSystem system);
 EnrollmentError destroyEnrollmentSystemArrays(EnrollmentSystem system);
 
+
+/*
+ * helper functions:
+ */
+
+int getIDFromFile(char studentID[ID_SIZE], FILE* file2Read);
+EnrollmentError getNameFromFile(char** name, FILE* file2Read);
 
 /*
  * Code:
@@ -83,17 +98,16 @@ EnrollmentError destroyEnrollmentSystemArrays(EnrollmentSystem system);
 /*
  * createEnrollment segment:
  *
- * EnrollmentSystem createEnrollment(FILE* students, FILE* courses, FILE* hackers)
- * EnrollmentSystem constructEnrollmentSystem(EnrollmentSystem system);
- * EnrollmentError createStudentArrayOfEnrollmentSystem(EnrollmentSystem system, FILE* students)
- * EnrollmentError createCoursesArrayOfSystem(EnrollmentSystem system, FILE* courses)
- * EnrollmentError createHackersArrayOfSystem(EnrollmentSystem system, FILE* hackers)
- * Student createNewStudent()
- * Course createNewCourse()
- * EnrollmentError updateHackerParams(Student hacker, FILE* hackers)
- * EnrollmentError createAnIDArray(char** arr, FILE* hackers)
- * int getHackerPosInStudentArray(EnrollmentSystem sys, char* hackerID)
- * EnrollmentError getNameFromFile(char* name, FILE* file2Read)
+ * EnrollmentSystem constructEnrollmentSystem();
+ * EnrollmentError createStudentArrayOfEnrollmentSystem(EnrollmentSystem system, FILE* students);
+ * Student createNewStudent();
+ * EnrollmentError updateStudentParameters(Student newStudent, FILE* studentsFile, EnrollmentSystem system);
+ * EnrollmentError createCoursesArrayOfSystem(EnrollmentSystem system, FILE* courses);
+ * Course createNewCourse();
+ * EnrollmentError createHackersArrayOfSystem(EnrollmentSystem system, FILE* hackers);
+ * EnrollmentError updateHackerParams(Student hacker, FILE* hackers);
+ * EnrollmentError createAnIDArray(char*** IDArrayPtr, FILE* hackers);
+ * int getHackerPositionInStudentArray(EnrollmentSystem system, char* hackerID);
  */
 
 EnrollmentSystem createEnrollment(FILE* students, FILE* courses, FILE* hackers)
@@ -111,18 +125,18 @@ EnrollmentSystem createEnrollment(FILE* students, FILE* courses, FILE* hackers)
     }
 
     // add students from file to array.
-    int errorResult = createStudentArrayOfEnrollmentSystem(system, students);
-    if(errorResult != SUCCESS)
+    int result = createStudentArrayOfEnrollmentSystem(system, students);
+    if(result != SUCCESS)
     {
         destroyEnrollmentSystemArrays(system);
         return NULL;
     }
 
     // add courses from file to array.
-    errorResult = createCoursesArrayOfSystem(system, courses);
-    if(errorResult != SUCCESS)
+    result = createCoursesArrayOfSystem(system, courses);
+    if(result != SUCCESS)
     {
-        if (errorResult == ALLOC_FAILED)
+        if (result == ALLOC_FAILED)
         {
             destroyStudentArrayContent(system->myStudents, system->StudentArraySize);
         }
@@ -131,8 +145,8 @@ EnrollmentSystem createEnrollment(FILE* students, FILE* courses, FILE* hackers)
     }
 
     // add hackers from file to array.
-    errorResult = createHackersArrayOfSystem(system, hackers);
-    if (errorResult != SUCCESS)
+    result = createHackersArrayOfSystem(system, hackers);
+    if (result != SUCCESS)
     {
         destroyEnrollmentSystemArraysContent(system);
         destroyEnrollmentSystemArrays(system);
@@ -183,23 +197,22 @@ EnrollmentSystem constructEnrollmentSystem()
     return system;
 }
 
-EnrollmentError createStudentArrayOfEnrollmentSystem(EnrollmentSystem system, FILE* students)
+EnrollmentError createStudentArrayOfEnrollmentSystem(EnrollmentSystem system, FILE* studentsFile)
 {
     // if one of the parameters is bad.
-    if (system == NULL || students == NULL)
+    if (system == NULL || studentsFile == NULL)
     {
         return BAD_PARAM;
     }
 
-    int studentsNum = 0, discardInt, result;
-    double discardDouble = 0;
+    int studentsNum = 0;
     Student* tempStudent = NULL;
-    char firstChar = (char)fgetc(students);
+    char firstChar = (char)fgetc(studentsFile);
 
     // while file not ended.
     while(firstChar != EOF)
     {
-        ungetc(firstChar, students);
+        ungetc(firstChar, studentsFile);
 
         //check if need to reallocate the array of students
         if(studentsNum == system->StudentArraySize)
@@ -223,41 +236,89 @@ EnrollmentError createStudentArrayOfEnrollmentSystem(EnrollmentSystem system, FI
             return ALLOC_FAILED; //no need to free, only have to free sys on the caller
         }
 
-        //get the ID
-        getIDFromFile(newStudent->StudentID, students);
-
-        //discard the space, total credits, GPA and space at the end
-        fscanf(students, " %d %lf ", &discardInt, &discardDouble);
-
-        //get the name
-        result = getNameFromFile(&newStudent->name, students);
-        if (result == ALLOC_FAILED)
+        int result = updateStudentParameters(newStudent, studentsFile, system);
+        if (result != SUCCESS)
         {
             destroyStudentArrayContent(system->myStudents, system->StudentArraySize-1);
-            free(newStudent->StudentID);
-            free(newStudent->name);
-            free(newStudent);
             return ALLOC_FAILED;
         }
 
-        //get surname
-        result = getNameFromFile(&newStudent->surName, students);
-        if (result == ALLOC_FAILED){
-            destroyStudentArrayContent(system->myStudents, system->StudentArraySize-1);
-            destroyStudent(newStudent);
-            return ALLOC_FAILED;
-        }
         //store the student in the array
         system->myStudents[studentsNum] = newStudent;
         studentsNum++;
 
         for (int i = 0;firstChar != '\n'; i++)
         {
-            firstChar = (char)fgetc(students);
+            firstChar = (char)fgetc(studentsFile);
         }
 
-        firstChar = (char)fgetc(students);
+        firstChar = (char)fgetc(studentsFile);
     }
+    return SUCCESS;
+}
+
+Student createNewStudent()
+{
+    Student newStudent = malloc(sizeof(struct Student_t));
+    if(newStudent == NULL)
+    {
+        return NULL;
+    }
+    newStudent->StudentID = malloc(sizeof(char) * ID_SIZE);
+    if(newStudent->StudentID == NULL)
+    {
+        free(newStudent);
+        return NULL;
+    }
+    newStudent->name = malloc(sizeof(char) * NAME_START_SIZE);
+    if(newStudent->name == NULL)
+    {
+        free(newStudent->StudentID);
+        free(newStudent);
+        return NULL;
+    }
+    newStudent->surName = malloc(sizeof(char) * NAME_START_SIZE);
+    if(newStudent->surName == NULL)
+    {
+        free(newStudent->StudentID);
+        free(newStudent->name);
+        free(newStudent);
+        return NULL;
+    }
+    newStudent->desiredCourses = NULL;
+    newStudent->friendsId = NULL;
+    newStudent->enemiesId = NULL;
+    return  newStudent;
+}
+
+EnrollmentError updateStudentParameters(Student newStudent, FILE* studentsFile, EnrollmentSystem system)
+{
+    int discardInt = 0, result = 0;
+    double discardDouble = 0;
+
+    //get the ID
+    getIDFromFile(newStudent->StudentID, studentsFile);
+
+    //discard the space, total credits, GPA and space at the end
+    fscanf(studentsFile, " %d %lf ", &discardInt, &discardDouble);
+
+    //get the name
+    result = getNameFromFile(&newStudent->name, studentsFile);
+    if (result == ALLOC_FAILED)
+    {
+        free(newStudent->StudentID);
+        free(newStudent->name);
+        free(newStudent);
+        return ALLOC_FAILED;
+    }
+
+    //get surname
+    result = getNameFromFile(&newStudent->surName, studentsFile);
+    if (result == ALLOC_FAILED){
+        destroyStudent(newStudent);
+        return ALLOC_FAILED;
+    }
+
     return SUCCESS;
 }
 
@@ -302,6 +363,39 @@ EnrollmentError createCoursesArrayOfSystem(EnrollmentSystem system, FILE* course
         courseAmount++;
     }
     return SUCCESS;
+}
+
+Course createNewCourse()
+{
+
+    Course newCourse = malloc(sizeof(struct Course_t));
+
+    if(newCourse == NULL)
+    {
+        return NULL;
+    }
+
+    newCourse->courseNumber = 0;
+    newCourse->size = 0;
+
+    FriendshipFunction* friendshipFunctionArr = (FriendshipFunction*)malloc(sizeof(*friendshipFunctionArr));
+    if(friendshipFunctionArr == NULL)
+    {
+        free(newCourse);
+        return NULL;
+    }
+
+    friendshipFunctionArr[0] = NULL;
+    //need to fill compFunc
+
+    newCourse->queue = IsraeliQueueCreate(friendshipFunctionArr, (int (*)(void*, void*))compFunc, 20, 0);
+    free(friendshipFunctionArr);
+    if(newCourse->queue == NULL)
+    {
+        free(newCourse);
+        return NULL;
+    }
+    return newCourse;
 }
 
 EnrollmentError createHackersArrayOfSystem(EnrollmentSystem system, FILE* hackers)
@@ -353,73 +447,6 @@ EnrollmentError createHackersArrayOfSystem(EnrollmentSystem system, FILE* hacker
         hackersNum++;
     }
     return SUCCESS;
-}
-
-Student createNewStudent()
-{
-    Student newStudent = malloc(sizeof(struct Student_t));
-    if(newStudent == NULL)
-    {
-        return NULL;
-    }
-    newStudent->StudentID = malloc(sizeof(char) * ID_SIZE);
-    if(newStudent->StudentID == NULL)
-    {
-        free(newStudent);
-        return NULL;
-    }
-    newStudent->name = malloc(sizeof(char) * NAME_START_SIZE);
-    if(newStudent->name == NULL)
-    {
-        free(newStudent->StudentID);
-        free(newStudent);
-        return NULL;
-    }
-    newStudent->surName = malloc(sizeof(char) * NAME_START_SIZE);
-    if(newStudent->surName == NULL)
-    {
-        free(newStudent->StudentID);
-        free(newStudent->name);
-        free(newStudent);
-        return NULL;
-    }
-    newStudent->desiredCourses = NULL;
-    newStudent->friendsId = NULL;
-    newStudent->enemiesId = NULL;
-    return  newStudent;
-}
-
-Course createNewCourse()
-{
-
-    Course newCourse = malloc(sizeof(struct Course_t));
-
-    if(newCourse == NULL)
-    {
-        return NULL;
-    }
-
-    newCourse->courseNumber = 0;
-    newCourse->size = 0;
-
-    FriendshipFunction* friendshipFunctionArr = (FriendshipFunction*)malloc(sizeof(*friendshipFunctionArr));
-    if(friendshipFunctionArr == NULL)
-    {
-        free(newCourse);
-        return NULL;
-    }
-
-    friendshipFunctionArr[0] = NULL;
-    //need to fill compFunc
-
-    newCourse->queue = IsraeliQueueCreate(friendshipFunctionArr, (int (*)(void*, void*))compFunc, 20, 0);
-    free(friendshipFunctionArr);
-    if(newCourse->queue == NULL)
-    {
-        free(newCourse);
-        return NULL;
-    }
-    return newCourse;
 }
 
 EnrollmentError updateHackerParams(Student hacker, FILE* hackers)
@@ -558,33 +585,6 @@ int getHackerPositionInStudentArray(EnrollmentSystem system, char* hackerID)
     return -1;
 }
 
-EnrollmentError getNameFromFile(char** name, FILE* file2Read)
-{
-    int nameLength = 0;
-    int namesSize = NAME_START_SIZE;
-    char currChar = (char)fgetc(file2Read);
-    char* tempName = NULL;
-    for(int i = 0; currChar != ' '; i++)
-    {
-        if(nameLength == namesSize-1)
-        {
-            namesSize *= 2;
-            tempName = realloc(*name, sizeof(char) * namesSize);
-            if(tempName == NULL)
-            {
-                return ALLOC_FAILED;
-            }
-            *name = tempName;
-        }
-
-
-        (*name)[i] = currChar;
-        nameLength++;
-        currChar = (char)fgetc(file2Read);
-    }
-    (*name)[nameLength] = '\0'; //null terminate the name
-    return SUCCESS;
-}
 
 /*
  * readEnrollment segment:
@@ -869,9 +869,11 @@ void printCourse(Course course2Print , FILE* out)
  * int calcNameDiff(char* name1, char* name2):
     gets two names and assumes the first one is longer. calculates the difference between the names and returns it.
 
- * int friendshipFuncIDSubtract(Student student1, Student student2)
+ * int friendshipFuncIDSubtract(Student student1, Student student2):
+    gets two students and calculates the difference in their IDs and returns it.
 
- * int compFunc(Student student1, Student student2)
+ * int compFunc(Student student1, Student student2):
+    gets to students and compares their ID's anr returns 1 if equal, 0 else.
  */
 
 int friendshipFuncHackerFile(Student student1, Student student2)
@@ -981,29 +983,6 @@ int compFunc(Student student1, Student student2)
  * void updateCapLettersFlag(EnrollmentSystem system, bool flag)
  */
 
-int getIDFromFile(char studentID[ID_SIZE], FILE* file2Read)
-{
-    for (int i = 0; i < ID_SIZE-1; i++)
-    {
-        studentID[i] = fgetc(file2Read);
-    }
-    studentID[ID_SIZE-1] = 0;
-    char lastChar = fgetc(file2Read);
-    ungetc(lastChar, file2Read); // move backwards one character if file stream.
-    if (lastChar == ' ')
-    {
-        return SPACE;
-    }
-    else if (lastChar == '\n')
-    {
-        return NEXT_LINE;
-    }
-    else
-    {
-        return END_OF_FILE;
-    }
-}
-
 EnrollmentError destroyStudentArrayContent(Student* studentArray, int size)
 {
     for (int i = 0; i < size; i++)
@@ -1088,9 +1067,66 @@ EnrollmentError destroyEnrollmentSystem(EnrollmentSystem system)
     return SUCCESS;
 }
 
+
+/*
+ * helper functions:
+ * EnrollmentError getNameFromFile(char** name, FILE* file2Read)
+ * int getIDFromFile(char studentID[ID_SIZE], FILE* file2Read)
+ * void updateCapLettersFlag(EnrollmentSystem system, bool flag)
+ */
+
+EnrollmentError getNameFromFile(char** name, FILE* file2Read)
+{
+    int nameLength = 0;
+    int namesSize = NAME_START_SIZE;
+    char currChar = (char)fgetc(file2Read);
+    char* tempName = NULL;
+    for(int i = 0; currChar != ' '; i++)
+    {
+        if(nameLength == namesSize-1)
+        {
+            namesSize *= 2;
+            tempName = realloc(*name, sizeof(char) * namesSize);
+            if(tempName == NULL)
+            {
+                return ALLOC_FAILED;
+            }
+            *name = tempName;
+        }
+
+
+        (*name)[i] = currChar;
+        nameLength++;
+        currChar = (char)fgetc(file2Read);
+    }
+    (*name)[nameLength] = '\0'; //null terminate the name
+    return SUCCESS;
+}
+
+int getIDFromFile(char studentID[ID_SIZE], FILE* file2Read)
+{
+    for (int i = 0; i < ID_SIZE-1; i++)
+    {
+        studentID[i] = fgetc(file2Read);
+    }
+    studentID[ID_SIZE-1] = 0;
+    char lastChar = fgetc(file2Read);
+    ungetc(lastChar, file2Read); // move backwards one character if file stream.
+    if (lastChar == ' ')
+    {
+        return SPACE;
+    }
+    else if (lastChar == '\n')
+    {
+        return NEXT_LINE;
+    }
+    else
+    {
+        return END_OF_FILE;
+    }
+}
+
 void updateCapLettersFlag(EnrollmentSystem system, bool flag)
 {
     system->capLettersFlag = flag;
 }
-
-
