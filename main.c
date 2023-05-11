@@ -36,7 +36,7 @@ int main(int argc, char** argv)
         flag = 2;
     }
 
-    FILE* systemFiles[NUM_OF_FILES] = {};
+    FILE* systemFiles[NUM_OF_FILES] = {0};
     openSystemFiles(systemFiles,
                     argv[STUDENTS_FILE+flag],
                     argv[COURSES_FILE+flag],
