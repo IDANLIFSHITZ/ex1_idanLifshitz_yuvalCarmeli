@@ -762,7 +762,7 @@ void hackEnrollment(EnrollmentSystem system, FILE* out)
             Course currCourse = getCourse(system->courses, system->courseArraySize,
                                           system->hackers[i]->desiredCourses[j]);
 
-            //hack the courrCourse queue, the hacker's desired course.
+            //hack the currCourse queue, the hacker's desired course.
             result = IsraeliQueueEnqueue(currCourse->queue, system->hackers[i]);
             if(result != ISRAELIQUEUE_SUCCESS)
             {
@@ -780,11 +780,11 @@ void hackEnrollment(EnrollmentSystem system, FILE* out)
         }
         if (!checkSatisfiedHacker(countSuccessCourses, system->hackers[i]))
         {
-            printFailedHacker(out, system->hackers[i]);///////////////////////////////////////////////////////////////////////////
+            printFailedHacker(out, system->hackers[i]);
             return;
         }
     }
-    printCourses2File(system, out);//////////////////////////////////////////////////////////////////////////////////////////////////
+    printCourses2File(system, out);
 }
 
 int isInCourse(Course course2Check, Student student2Find)
@@ -831,7 +831,7 @@ void printFailedHacker(FILE* out, Student hacker2Print)
 {
     char message2Print[100] = "Cannot satisfy constraints for ";
     strcat(message2Print, hacker2Print->StudentID);
-    fprintf(out, message2Print);
+    fprintf(out, "%s\n", message2Print);
 }
 
 void printCourses2File(EnrollmentSystem system, FILE* out)
@@ -843,7 +843,6 @@ void printCourses2File(EnrollmentSystem system, FILE* out)
             printCourse(system->courses[i], out);
         }
     }
-    ungetc('\n', out);
 }
 
 void printCourse(Course course2Print , FILE* out)
